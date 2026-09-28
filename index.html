@@ -166,6 +166,48 @@
         { brand: "John Deere", tipo: "Mietitrebbia", famiglia: "Serie X9", modello: "X9 1000 / X9 1100", hp: "549 - 690 HP", emissioni: "Stage V / Tier 4 Final", paese: "Stati Uniti (USA)", stabilimento: "East Moline, Illinois" }
     ];
 
+    // Dettaglio modelli per serie (chiave = famiglia). HP = potenza massima motore da fonti ufficiali/rivenditori.
+    // verifica: true = dati incompleti o da confermare
+    const modelli = {
+        "Workmaster": { righe: [["Workmaster 25","25 HP"],["Workmaster 35","35 HP"],["Workmaster 40","40 HP"],["Workmaster 50","53 HP"],["Workmaster 60","60 HP"]] },
+        "Workmaster Globale": { righe: [["Simba 20","20 HP"],["Simba 30","30 HP"],["3230 NX / TX","42 HP"],["3600-2 TX","50 HP"],["3630 TX Super","50 HP"],["Excel 4710","50 HP"],["5620 TX Plus","65 HP"],["5630 TX Plus","75 HP"],["Workmaster 105","106 HP"]] },
+        "New Holland T4 / T5": { righe: [["T5.80 Dual Command","80 HP"],["T5.90 Dual Command","90 HP"],["T5.100 Dual Command","101 HP"],["T5.110 Dual Command","110 HP"],["T5.120 Dual Command","117 HP"]] },
+        "New Holland T4 / T3": { verifica: true, righe: [["T3 (3 modelli)","55 - 75 HP"],["T4B (modelli 86 HP)","86 HP"],["T4B (modelli 99 HP)","99 HP"],["T4B (modelli 110 HP)","110 HP"]] },
+        "New Holland T6": { righe: [["T6.180 Methane Power","175 HP"]] },
+        "New Holland T7": { righe: [["T7.165 S","165 HP"],["T7.195 S","190 HP"],["T7.215 S","214 HP"],["T7.230","200 HP"],["T7.245","220 HP"],["T7.260","240 HP"],["T7.270","260 HP"],["T7.290 HD","288 HP"],["T7.315 HD","313 HP"],["T7.340 HD","340 HP"]] },
+        "Alta Potenza": { verifica: true, righe: [] },
+        "New Holland T8": { righe: [["T8.320","284 HP"],["T8.350","315 HP"],["T8.380","347 HP"],["T8.410","374 HP"],["T8.435","417 HP"]] },
+        "New Holland T9": { righe: [["T9.470","467 HP"],["T9.520","522 HP"],["T9.580","578 HP"],["T9.615","614 HP"],["T9.655","656 HP"],["T9.700 SmartTrax","699 HP"]] },
+        "New Holland T8 (Sud America)": { verifica: true, righe: [["T8.320","284 HP"],["T8.350","315 HP"],["T8.380","347 HP"],["T8.410","374 HP"],["T8.435","417 HP"]] },
+        "New Holland TC": { righe: [["TC4.90","175 HP"],["TC5.70","175 HP"],["TC5.80","227 HP"],["TC5.90","258 HP"]] },
+        "New Holland CR (SA)": { righe: [["TC 4.90","223 CV"],["TC 5.90","272 CV"],["CR 5.85","272 CV"],["CR 6.80","313 CV"],["CR 7.80","378 CV"],["CR 7.90","435 CV"],["CR 8.90","503 CV"]] },
+        "New Holland CX": { verifica: true, righe: [["CX5.80 / CX5.90 / CX6.80 / CX6.90","258 - 340 HP"],["CX7.80","340 HP"],["CX7.90","374 HP"],["CX8.70","374 HP"],["CX8.80","415 HP"],["CX8.90","460 HP"]] },
+        "New Holland CR": { righe: [["CR7.80","415 HP"],["CR7.90","460 HP"],["CR8.80","517 HP"],["CR8.90","544 HP"],["CR9.90","600 HP"],["CR10.90","700 HP"]] },
+        "New Holland CR (US)": { righe: [["CR7.80","415 HP"],["CR7.90","460 HP"],["CR8.90","571 HP"],["CR9.90","600 HP"],["CR10.90","700 HP"]] },
+        "New Holland CR Next Gen": { righe: [["CR10","635 HP"],["CR11","775 HP"]] }
+    };
+
+    function toggleDettaglio(id) {
+        const el = document.getElementById("det-" + id);
+        if (el) el.classList.toggle("d-none");
+    }
+
+    function htmlDettaglio(item, id) {
+        const m = modelli[item.famiglia];
+        if (!m) return "";
+        let corpo;
+        if (m.righe.length === 0) {
+            corpo = `<div class="small text-muted">Dati dei modelli non ancora disponibili.</div>`;
+        } else {
+            corpo = `<table class="table table-sm small mb-1"><thead><tr><th>Modello</th><th class="text-end">HP max</th></tr></thead><tbody>` +
+                m.righe.map(r => `<tr><td>${r[0]}</td><td class="text-end">${r[1]}</td></tr>`).join("") +
+                `</tbody></table>`;
+        }
+        if (m.verifica) corpo += `<div class="small text-warning-emphasis">⚠️ Dati da verificare</div>`;
+        return `<div id="det-${id}" class="d-none mt-2 pt-2 border-top">${corpo}</div>
+                <div class="small text-primary mt-2">▾ Tocca per vedere i modelli</div>`;
+    }
+
     function populateSelects() {
         const brands = [...new Set(data.map(item => item.brand))].sort();
         const tipos = [...new Set(data.map(item => item.tipo))].sort();
@@ -201,8 +243,10 @@
             else if (item.brand === "CNH Industrial") brandClass = "cnh";
             else if (item.brand === "John Deere") brandClass = "johndeere";
 
+            const id = data.indexOf(item);
+            const haDettaglio = !!modelli[item.famiglia];
             container.innerHTML += `
-                <div class="machine-card ${brandClass}">
+                <div class="machine-card ${brandClass}" ${haDettaglio ? `onclick="toggleDettaglio(${id})" style="cursor:pointer;"` : ""}>
                     <div class="d-flex justify-content-between align-items-start mb-1">
                         <h6 class="fw-bold mb-0 text-dark">${item.brand}</h6>
                         <span class="badge bg-light text-dark border badge-tipo">${item.tipo}</span>
@@ -215,6 +259,7 @@
                         <div class="col-6">🏭 <strong>Stabilimento:</strong> ${item.stabilimento}</div>
                         <div class="col-6">🌱 <strong>Emissioni:</strong> ${item.emissioni}</div>
                     </div>
+                    ${haDettaglio ? htmlDettaglio(item, id) : ""}
                 </div>
             `;
         });

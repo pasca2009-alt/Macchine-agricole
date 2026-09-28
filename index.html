@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AgriDB - Macchine Agricole</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f2f2f7;
+            color: #1c1c1e;
+            padding-bottom: 40px;
+        }
+        .header-app {
+            background: linear-gradient(135deg, #2c3e50, #1a252f);
+            color: white;
+            padding: 20px 15px;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .filter-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            margin-bottom: 20px;
+        }
+        .machine-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            border-left: 5px solid #2c3e50;
+        }
+        .machine-card.claas { border-left-color: #00843d; }
+        .machine-card.cnh { border-left-color: #002b49; }
+        .machine-card.johndeere { border-left-color: #367c2b; }
+        
+        .badge-tipo {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.95rem;
+            border: 1px solid #d1d1d6;
+        }
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.15);
+            border-color: #2c3e50;
+        }
+        .btn-reset {
+            border-radius: 10px;
+            padding: 10px;
+            font-weight: 500;
+            background-color: #e5e5ea;
+            color: #3a3a3c;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-app text-center">
+    <h3 class="mb-1 fw-bold">🚜 AgriDB Mobile</h3>
+    <p class="mb-0 text-white-55 small">Catalogo Globale Trattori & Mietitrebbie</p>
+</div>
+
+<div class="container px-3">
+    
+    <!-- Pannello dei Filtri Touch-Friendly -->
+    <div class="filter-card">
+        <h6 class="fw-bold mb-3 text-secondary">🔍 Filtra Database</h6>
+        <div class="row g-2">
+            <!-- Ricerca Globale -->
+            <div class="col-12 mb-1">
+                <input type="text" id="globalSearch" class="form-control" placeholder="Cerca qualsiasi termine..." onkeyup="filterTable()">
+            </div>
+            <!-- Filtri a tendina -->
+            <div class="col-6">
+                <select id="filterBrand" class="form-select" onchange="filterTable()">
+                    <option value="">Brand: Tutti</option>
+                </select>
+            </div>
+            <div class="col-6">
+                <select id="filterTipo" class="form-select" onchange="filterTable()">
+                    <option value="">Tipo: Tutti</option>
+                </select>
+            </div>
+            <div class="col-6">
+                <select id="filterPaese" class="form-select" onchange="filterTable()">
+                    <option value="">Paese: Tutti</option>
+                </select>
+            </div>
+            <div class="col-6">
+                <select id="filterFamiglia" class="form-select" onchange="filterTable()">
+                    <option value="">Famiglia: Tutte</option>
+                </select>
+            </div>
+            <div class="col-12 mt-2">
+                <button class="btn btn-reset w-100" onclick="resetFilters()">Resetta Tutti i Filtri</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contatore Risultati -->
+    <div class="d-flex justify-content-between align-items-center mb-3 px-1">
+        <span id="resultCount" class="small text-muted fw-semibold">Caricamento...</span>
+    </div>
+
+    <!-- Lista Risultati in stile Card -->
+    <div id="cardContainer"></div>
+
+</div>
+
+<script>
+    const data = [
+        { brand: "Claas", tipo: "Trattore", famiglia: "Elos / Atos", modello: "Utility leggeri", hp: "75 - 100 HP", emissioni: "Stage V", paese: "Portogallo", stabilimento: "Tramagal" },
+        { brand: "Claas", tipo: "Trattore", famiglia: "Arion", modello: "Arion 500 / 600", hp: "125 - 205 HP", emissioni: "Stage V", paese: "Francia", stabilimento: "Le Mans" },
+        { brand: "Claas", tipo: "Trattore", famiglia: "Axion", modello: "Axion 800 / 900", hp: "205 - 450 HP", emissioni: "Stage V", paese: "Francia", stabilimento: "Le Mans" },
+        { brand: "Claas", tipo: "Trattore", famiglia: "Xerion", modello: "Xerion 4200-5000 / Serie 12", hp: "450 - 653 HP", emissioni: "Stage V / Tier 4 Final", paese: "Germania", stabilimento: "Harsewinkel" },
+        { brand: "Claas", tipo: "Mietitrebbia", famiglia: "Crop Tiger", modello: "Serie compatte", hp: "60 - 120 HP", emissioni: "Stage V / Standard locali", paese: "India", stabilimento: "Chandigarh" },
+        { brand: "Claas", tipo: "Mietitrebbia", famiglia: "Trion", modello: "Trion 500 / 600 / 700", hp: "258 - 435 HP", emissioni: "Stage V", paese: "Germania", stabilimento: "Harsewinkel" },
+        { brand: "Claas", tipo: "Mietitrebbia", famiglia: "Lexion", modello: "Lexion 5000-8000", hp: "313 - 790 HP", emissioni: "Stage V / Tier 4 Final", paese: "Germania", stabilimento: "Harsewinkel" },
+        { brand: "Claas", tipo: "Mietitrebbia", famiglia: "Lexion (US)", modello: "Lexion Nord America", hp: "350 - 790 HP", emissioni: "Stage V / Tier 4 Final", paese: "Stati Uniti (USA)", stabilimento: "Omaha, Nebraska" },
+        
+        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "Workmaster", modello: "Workmaster / Serie C", hp: "20 - 60 HP", emissioni: "Stage V / TREM-IV", paese: "Italia", stabilimento: "Jesi" },
+        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "Workmaster Globale", modello: "Workmaster (India)", hp: "20 - 110 HP", emissioni: "Stage V / TREM-IV", paese: "India", stabilimento: "Greater Noida" },
+        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland T4 / T5", modello: "T4 / T5 compatti", hp: "75 - 120 HP", emissioni: "Stage V / Tier 4B ECOBlue", paese: "Italia", stabilimento: "Jesi (Ancona)" },
+        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland T4 / T3", modello: "T4 / T3 Utility", hp: "55 - 115 HP", emissioni: "Stage V / Tier 4", paese: "Turchia", stabilimento: "Ankara" },
+        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland T6", modello: "T6 Methane Power", hp: "140 - 180 HP", emissioni: "Stage V (A metano)", paese: "Regno Unito", stabilimento: "Basildon" },
+        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland T7", modello: "T7 / T7 HD", hp: "150 - 315 HP", emissioni: "Stage V (HI-eSCR2)", paese: "Regno Unito", stabilimento: "Basildon" },
+        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "Alta Potenza", modello: "Pieno campo sinergici", hp: "150 - 300+ HP", emissioni: "Stage V", paese: "Austria", stabilimento: "St. Valentin" },
+        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland T8", modello: "T8 / T8 Genesis", hp: "320 - 435 HP", emissioni: "Stage V", paese: "Stati Uniti (USA)", stabilimento: "Racine, Wisconsin" },
+        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland T9", modello: "T9 / T9 Quantum", hp: "450 - 670 HP", emissioni: "Stage V", paese: "Stati Uniti (USA)", stabilimento: "Fargo, North Dakota" },
+        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland T8 (Sud America)", modello: "T8 Genesis SA", hp: "320 - 435 HP", emissioni: "Stage V / Tier 3-4", paese: "Brasile", stabilimento: "Curitiba" },
+        { brand: "CNH Industrial", tipo: "Mietitrebbia", famiglia: "New Holland TC", modello: "TC / Medie", hp: "175 - 300 HP", emissioni: "Stage V / Tier 4", paese: "Polonia", stabilimento: "Płock" },
+        { brand: "CNH Industrial", tipo: "Mietitrebbia", famiglia: "New Holland CR (SA)", modello: "CR / TC Sud America", hp: "250 - 600 HP", emissioni: "Stage V / Tier 3-4", paese: "Brasile / Argentina", stabilimento: "Sorocaba / Córdoba" },
+        { brand: "CNH Industrial", tipo: "Mietitrebbia", famiglia: "New Holland CX", modello: "CX Conventional", hp: "272 - 460 HP", emissioni: "Stage V", paese: "Belgio", stabilimento: "Zedelgem" },
+        { brand: "CNH Industrial", tipo: "Mietitrebbia", famiglia: "New Holland CR", modello: "CR Twin Rotor", hp: "415 - 635 HP", emissioni: "Stage V", paese: "Belgio", stabilimento: "Zedelgem" },
+        { brand: "CNH Industrial", tipo: "Mietitrebbia", famiglia: "New Holland CR (US)", modello: "CR / Axial-Flow USA", hp: "415 - 600+ HP", emissioni: "Stage V / Tier 4 Final", paese: "Stati Uniti (USA)", stabilimento: "Grand Island, Nebraska" },
+        { brand: "CNH Industrial", tipo: "Mietitrebbia", famiglia: "New Holland CR Next Gen", modello: "CR10 / CR11", hp: "634 - 775 HP", emissioni: "Stage V", paese: "Belgio", stabilimento: "Zedelgem" },
+
+        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 1", modello: "1E, 1M, 1R", hp: "21 - 25 HP", emissioni: "Stage V / Tier 4", paese: "India", stabilimento: "Pune" },
+        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 1, 3 e 4", modello: "Sub-compatti US", hp: "21 - 66 HP", emissioni: "Stage V / Tier 4", paese: "Stati Uniti (USA)", stabilimento: "Augusta, Georgia" },
+        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 5", modello: "5E, 5M, 5R", hp: "75 - 130 HP", emissioni: "Stage V / Tier 4 Final", paese: "Germania", stabilimento: "Mannheim" },
+        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 5 (India)", modello: "5E India", hp: "75 - 130 HP", emissioni: "Stage V / Tier 4 Final", paese: "India", stabilimento: "Pune" },
+        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 5 (Messico)", modello: "5E / Utility Messico", hp: "75 - 130 HP", emissioni: "Stage V / Tier 4 Final", paese: "Messico", stabilimento: "Ramos Arizpe / Monterrey" },
+        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 6", modello: "6M, 6R", hp: "95 - 250 HP", emissioni: "Stage V", paese: "Germania", stabilimento: "Mannheim" },
+        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 7", modello: "7R", hp: "210 - 350 HP", emissioni: "Stage V / Tier 4 Final", paese: "Stati Uniti (USA)", stabilimento: "Waterloo, Iowa" },
+        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 8", modello: "8R, 8RT, 8RX", hp: "230 - 540 HP", emissioni: "Stage V / Tier 4 Final", paese: "Stati Uniti (USA)", stabilimento: "Waterloo, Iowa" },
+        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 9", modello: "9R, 9RX", hp: "384 - 913 HP", emissioni: "Stage V / Tier 4 Final", paese: "Stati Uniti (USA)", stabilimento: "Waterloo, Iowa" },
+        { brand: "John Deere", tipo: "Mietitrebbia", famiglia: "Serie Media", modello: "Mercati Asiatici", hp: "120 - 250 HP", emissioni: "Standard Locali", paese: "Cina", stabilimento: "Jiamusi / Tianjin" },
+        { brand: "John Deere", tipo: "Mietitrebbia", famiglia: "Serie S / W / T (SA)", modello: "Sud America", hp: "250 - 500 HP", emissioni: "Stage V / Tier 3", paese: "Brasile", stabilimento: "Horizontina" },
+        { brand: "John Deere", tipo: "Mietitrebbia", famiglia: "Serie S", modello: "S7 600 / S7 700", hp: "367 - 460 HP", emissioni: "Stage V / Tier 4 Final", paese: "Stati Uniti (USA)", stabilimento: "East Moline, Illinois" },
+        { brand: "John Deere", tipo: "Mietitrebbia", famiglia: "Serie S", modello: "S7 800 / S7 900", hp: "540 - 617 HP", emissioni: "Stage V / Tier 4 Final", paese: "Stati Uniti (USA)", stabilimento: "East Moline, Illinois" },
+        { brand: "John Deere", tipo: "Mietitrebbia", famiglia: "Serie X9", modello: "X9 1000 / X9 1100", hp: "549 - 690 HP", emissioni: "Stage V / Tier 4 Final", paese: "Stati Uniti (USA)", stabilimento: "East Moline, Illinois" }
+    ];
+
+    function populateSelects() {
+        const brands = [...new Set(data.map(item => item.brand))].sort();
+        const tipos = [...new Set(data.map(item => item.tipo))].sort();
+        const paesi = [...new Set(data.map(item => item.paese))].sort();
+        const famiglie = [...new Set(data.map(item => item.famiglia))].sort();
+
+        const brandSelect = document.getElementById("filterBrand");
+        brands.forEach(b => brandSelect.innerHTML += `<option value="${b}">${b}</option>`);
+
+        const tipoSelect = document.getElementById("filterTipo");
+        tipos.forEach(t => tipoSelect.innerHTML += `<option value="${t}">${t}</option>`);
+
+        const paeseSelect = document.getElementById("filterPaese");
+        paesi.forEach(p => paeseSelect.innerHTML += `<option value="${p}">${p}</option>`);
+
+        const famigliaSelect = document.getElementById("filterFamiglia");
+        famiglie.forEach(f => famigliaSelect.innerHTML += `<option value="${f}">${f}</option>`);
+    }
+
+    function renderCards(filteredData) {
+        const container = document.getElementById("cardContainer");
+        container.innerHTML = "";
+
+        if (filteredData.length === 0) {
+            container.innerHTML = `<div class="text-center text-muted py-4">Nessun risultato trovato</div>`;
+            document.getElementById("resultCount").innerText = `0 elementi trovati`;
+            return;
+        }
+
+        filteredData.forEach(item => {
+            let brandClass = "";
+            if (item.brand === "Claas") brandClass = "claas";
+            else if (item.brand === "CNH Industrial") brandClass = "cnh";
+            else if (item.brand === "John Deere") brandClass = "johndeere";
+
+            container.innerHTML += `
+                <div class="machine-card ${brandClass}">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <h6 class="fw-bold mb-0 text-dark">${item.brand}</h6>
+                        <span class="badge bg-light text-dark border badge-tipo">${item.tipo}</span>
+                    </div>
+                    <div class="fw-bold text-primary mb-1" style="font-size: 1rem;">🌾 Famiglia: ${item.famiglia}</div>
+                    <div class="small text-muted mb-2">Modello: ${item.modello}</div>
+                    <div class="row small text-secondary g-1 border-top pt-2">
+                        <div class="col-6">⚡ <strong>Potenza:</strong> ${item.hp}</div>
+                        <div class="col-6">🌍 <strong>Paese:</strong> ${item.paese}</div>
+                        <div class="col-6">🏭 <strong>Stabilimento:</strong> ${item.stabilimento}</div>
+                        <div class="col-6">🌱 <strong>Emissioni:</strong> ${item.emissioni}</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById("resultCount").innerText = `Mostrati ${filteredData.length} di ${data.length} elementi`;
+    }
+
+    function filterTable() {
+        const globalVal = document.getElementById("globalSearch").value.toLowerCase();
+        const brandVal = document.getElementById("filterBrand").value;
+        const tipoVal = document.getElementById("filterTipo").value;
+        const paeseVal = document.getElementById("filterPaese").value;
+        const famigliaVal = document.getElementById("filterFamiglia").value;
+
+        const filtered = data.filter(item => {
+            const fullText = `${item.brand} ${item.tipo} ${item.famiglia} ${item.modello} ${item.hp} ${item.emissioni} ${item.paese} ${item.stabilimento}`.toLowerCase();
+            
+            const matchGlobal = globalVal === "" || fullText.includes(globalVal);
+            const matchBrand = brandVal === "" || item.brand === brandVal;
+            const matchTipo = tipoVal === "" || item.tipo === tipoVal;
+            const matchPaese = paeseVal === "" || item.paese === paeseVal;
+            const matchFamiglia = famigliaVal === "" || item.famiglia === famigliaVal;
+
+            return matchGlobal && matchBrand && matchTipo && matchPaese && matchFamiglia;
+        });
+
+        renderCards(filtered);
+    }
+
+    function resetFilters() {
+        document.getElementById("globalSearch").value = "";
+        document.getElementById("filterBrand").value = "";
+        document.getElementById("filterTipo").value = "";
+        document.getElementById("filterPaese").value = "";
+        document.getElementById("filterFamiglia").value = "";
+        renderCards(data);
+    }
+
+    populateSelects();
+    renderCards(data);
+</script>
+
+</body>
+</html>

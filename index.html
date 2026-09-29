@@ -1,320 +1,944 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AgriDB - Macchine Agricole</title>
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f2f2f7;
-            color: #1c1c1e;
-            padding-bottom: 40px;
-        }
-        .header-app {
-            background: linear-gradient(135deg, #2c3e50, #1a252f);
-            color: white;
-            padding: 20px 15px;
-            border-radius: 0 0 20px 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .filter-card {
-            background: white;
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-            margin-bottom: 20px;
-        }
-        .machine-card {
-            background: white;
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            border-left: 5px solid #2c3e50;
-        }
-        .machine-card.claas { border-left-color: #00843d; }
-        .machine-card.cnh { border-left-color: #002b49; }
-        .machine-card.johndeere { border-left-color: #367c2b; }
-        
-        .badge-tipo {
-            font-size: 0.75rem;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-weight: 600;
-        }
-        .form-control, .form-select {
-            border-radius: 10px;
-            padding: 10px;
-            font-size: 0.95rem;
-            border: 1px solid #d1d1d6;
-        }
-        .form-control:focus, .form-select:focus {
-            box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.15);
-            border-color: #2c3e50;
-        }
-        .btn-reset {
-            border-radius: 10px;
-            padding: 10px;
-            font-weight: 500;
-            background-color: #e5e5ea;
-            color: #3a3a3c;
-            border: none;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="AgriDB">
+<meta name="theme-color" content="#f2f2f7">
+<title>AgriDB – Macchine Agricole</title>
+<link rel="apple-touch-icon" id="touchIcon" href="">
+<style>
+  :root {
+    --bg:#f2f2f7; --card:#ffffff; --card2:#f4f4f7; --text:#1c1c1e; --muted:#6e6e73;
+    --line:#e2e2e7; --accent:#1f6f43; --accent-text:#ffffff; --accent-soft:rgba(31,111,67,.12);
+    --chip:#e6e6eb; --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.05);
+    --overlay:rgba(0,0,0,.35); --bar:rgba(242,242,247,.86);
+    --radius:16px;
+    --st:env(safe-area-inset-top,0px); --sb:env(safe-area-inset-bottom,0px);
+  }
+  [data-theme="dark"] {
+    --bg:#000000; --card:#1c1c1e; --card2:#2c2c2e; --text:#f2f2f7; --muted:#98989f;
+    --line:#38383a; --accent:#4cc38a; --accent-text:#00210f; --accent-soft:rgba(76,195,138,.16);
+    --chip:#2c2c2e; --shadow:none; --overlay:rgba(0,0,0,.6); --bar:rgba(18,18,20,.86);
+  }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; background:var(--bg); color:var(--text); }
+  body {
+    font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    padding:var(--st) 0 calc(96px + var(--sb));
+    -webkit-font-smoothing:antialiased;
+  }
+  button,select,input { font:inherit; color:inherit; }
+  button { cursor:pointer; }
+  .wrap { max-width:720px; margin:0 auto; padding:0 16px; }
+
+  /* Header */
+  header { padding:14px 0 6px; display:flex; align-items:flex-end; justify-content:space-between; gap:12px; }
+  h1 { font-size:32px; line-height:1.1; margin:0; font-weight:800; letter-spacing:-.02em; }
+  .sub { color:var(--muted); font-size:14px; margin-top:2px; }
+  .icon-btn { width:40px; height:40px; border-radius:50%; border:0; background:var(--card); box-shadow:var(--shadow);
+    display:grid; place-items:center; font-size:18px; flex:none; }
+  .stats { display:flex; gap:8px; margin:12px 0 4px; }
+  .stat { flex:1; background:var(--card); border-radius:14px; padding:10px 12px; box-shadow:var(--shadow); }
+  .stat b { display:block; font-size:22px; font-variant-numeric:tabular-nums; }
+  .stat span { font-size:12px; color:var(--muted); }
+
+  /* Segmented */
+  .seg { display:flex; background:var(--chip); border-radius:10px; padding:2px; margin:12px 0 0; }
+  .seg button { flex:1; border:0; background:transparent; padding:7px 0; border-radius:8px; font-size:14px; font-weight:600; color:var(--muted); }
+  .seg button.on { background:var(--card); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,.12); }
+
+  /* Sticky toolbar */
+  .toolbar { position:sticky; top:0; z-index:20; background:var(--bar);
+    -webkit-backdrop-filter:saturate(180%) blur(20px); backdrop-filter:saturate(180%) blur(20px);
+    padding:10px 0 8px; margin-top:8px; border-bottom:1px solid transparent; }
+  .toolbar.scrolled { border-bottom-color:var(--line); }
+  .searchrow { display:flex; gap:8px; }
+  .search { flex:1; position:relative; }
+  .search input { width:100%; border:0; background:var(--chip); border-radius:12px; padding:10px 36px 10px 36px; font-size:16px; outline:none; }
+  .search input:focus { box-shadow:0 0 0 3px var(--accent-soft); }
+  .search input::-webkit-search-cancel-button { -webkit-appearance:none; display:none; }
+  .search .mag { position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:15px; pointer-events:none; }
+  .search .clear { position:absolute; right:6px; top:50%; transform:translateY(-50%); border:0; background:transparent; color:var(--muted); font-size:18px; width:28px; height:28px; display:none; }
+  .filterbtn { position:relative; border:0; background:var(--accent); color:var(--accent-text); border-radius:12px; padding:0 14px; font-weight:600; font-size:15px; }
+  .filterbtn .badge { position:absolute; top:-6px; right:-6px; background:#ff3b30; color:#fff; font-size:11px; min-width:18px; height:18px; border-radius:9px; display:none; place-items:center; padding:0 4px; }
+  .chips { display:flex; gap:6px; overflow-x:auto; padding:8px 0 2px; scrollbar-width:none; }
+  .chips::-webkit-scrollbar { display:none; }
+  .chip { flex:none; border:0; background:var(--card); box-shadow:var(--shadow); border-radius:999px; padding:6px 12px; font-size:14px; font-weight:500; white-space:nowrap; }
+  .chip.on { background:var(--accent); color:var(--accent-text); }
+  .chip .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:1px; }
+
+  .resbar { display:flex; justify-content:space-between; align-items:center; margin:10px 2px 8px; gap:8px; }
+  .resbar .count { font-size:13px; color:var(--muted); font-weight:600; }
+  .sortsel { border:0; background:transparent; color:var(--accent); font-weight:600; font-size:14px; text-align:right; -webkit-appearance:none; appearance:none; }
+
+  /* Cards */
+  .group-h { font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin:18px 4px 8px; display:flex; align-items:center; gap:8px; }
+  .group-h .dot { width:10px; height:10px; border-radius:50%; }
+  .card { background:var(--card); border-radius:var(--radius); padding:14px 14px 12px; margin-bottom:10px; box-shadow:var(--shadow); position:relative; overflow:hidden; }
+  .card::before { content:""; position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--bc,#888); }
+  .card-top { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+  .brand { font-size:13px; font-weight:700; color:var(--bc2,var(--muted)); }
+  .brand small { color:var(--muted); font-weight:500; }
+  .fam { font-size:18px; font-weight:700; margin:2px 0 1px; line-height:1.25; }
+  .mod { font-size:14px; color:var(--muted); }
+  .cmp { flex:none; border:1.5px solid var(--line); background:transparent; border-radius:999px; padding:5px 10px; font-size:13px; font-weight:600; color:var(--muted); }
+  .cmp.on { background:var(--accent); border-color:var(--accent); color:var(--accent-text); }
+  .hp { margin:12px 0 10px; }
+  .hp-l { display:flex; justify-content:space-between; font-size:14px; }
+  .hp-l b { font-variant-numeric:tabular-nums; }
+  .hp-l span { color:var(--muted); font-size:13px; }
+  .hp-track { height:6px; background:var(--card2); border-radius:3px; margin-top:6px; position:relative; }
+  .hp-fill { position:absolute; top:0; bottom:0; border-radius:3px; background:var(--bc,#888); min-width:6px; }
+  .meta { display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; font-size:13px; border-top:1px solid var(--line); padding-top:10px; }
+  .meta div { min-width:0; }
+  .meta .k { color:var(--muted); display:block; font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+  .pill { display:inline-block; font-size:12px; font-weight:600; background:var(--card2); border-radius:6px; padding:2px 7px; margin-right:4px; }
+  .note { font-size:12px; color:var(--muted); margin-top:8px; font-style:italic; }
+  .models { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 10px; }
+  .mchip { font-size:13px; background:var(--card2); border-radius:8px; padding:4px 8px; white-space:nowrap; }
+  .mchip b { font-variant-numeric:tabular-nums; }
+  .mchip.hit { background:var(--accent-soft); color:var(--text); box-shadow:inset 0 0 0 1.5px var(--accent); }
+  .mmore { font-size:12px; color:var(--muted); align-self:center; }
+  .hp-dot { position:absolute; top:-3px; width:12px; height:12px; margin-left:-6px; border-radius:50%; background:var(--card); border:2.5px solid var(--bc,#888); }
+  .hp-dot.hit { background:var(--accent); border-color:var(--accent); z-index:1; }
+  .hp-win { position:absolute; top:-5px; bottom:-5px; border-radius:4px; background:var(--accent-soft); box-shadow:inset 0 0 0 1px var(--accent); }
+  .empty { text-align:center; color:var(--muted); padding:48px 0; }
+  .empty button { margin-top:12px; }
+
+  /* Plants view */
+  .plant { background:var(--card); border-radius:var(--radius); padding:12px 14px; margin-bottom:8px; box-shadow:var(--shadow); width:100%; text-align:left; border:0; display:block; }
+  .plant-t { display:flex; justify-content:space-between; gap:8px; font-weight:700; }
+  .plant-t span { color:var(--muted); font-weight:600; font-size:13px; flex:none; }
+  .plant-b { font-size:13px; color:var(--muted); margin-top:4px; }
+  .plant-b i { font-style:normal; font-weight:600; }
+
+  /* Compare bar */
+  .cbar { position:fixed; left:0; right:0; bottom:0; z-index:30; padding:10px 16px calc(10px + var(--sb));
+    background:var(--bar); -webkit-backdrop-filter:saturate(180%) blur(20px); backdrop-filter:saturate(180%) blur(20px);
+    border-top:1px solid var(--line); transform:translateY(110%); transition:transform .25s ease; }
+  .cbar.show { transform:none; }
+  .cbar .in { max-width:720px; margin:0 auto; display:flex; gap:8px; align-items:center; }
+  .cbar .txt { flex:1; font-size:14px; color:var(--muted); }
+  .btn { border:0; border-radius:12px; padding:11px 16px; font-weight:600; font-size:15px; }
+  .btn.pri { background:var(--accent); color:var(--accent-text); }
+  .btn.sec { background:var(--chip); color:var(--text); }
+  .btn:disabled { opacity:.45; }
+
+  /* Sheets */
+  .overlay { position:fixed; inset:0; background:var(--overlay); z-index:40; opacity:0; pointer-events:none; transition:opacity .2s; }
+  .overlay.show { opacity:1; pointer-events:auto; }
+  .sheet { position:fixed; left:0; right:0; bottom:0; z-index:50; background:var(--card); border-radius:18px 18px 0 0;
+    max-height:88vh; display:flex; flex-direction:column; transform:translateY(105%); transition:transform .28s cubic-bezier(.2,.8,.2,1); }
+  .sheet.show { transform:none; }
+  .sheet .grab { width:36px; height:5px; background:var(--line); border-radius:3px; margin:8px auto 0; }
+  .sheet-h { display:flex; justify-content:space-between; align-items:center; padding:10px 16px 8px; max-width:720px; width:100%; margin:0 auto; }
+  .sheet-h h2 { font-size:18px; margin:0; }
+  .sheet-h button { border:0; background:transparent; color:var(--accent); font-weight:600; font-size:16px; }
+  .sheet-b { overflow-y:auto; padding:4px 16px calc(16px + var(--sb)); max-width:720px; width:100%; margin:0 auto; -webkit-overflow-scrolling:touch; }
+  .field { margin-bottom:14px; }
+  .field label { display:block; font-size:13px; font-weight:600; color:var(--muted); margin-bottom:6px; }
+  .field select { width:100%; border:0; background:var(--chip); border-radius:12px; padding:11px 12px; font-size:16px; -webkit-appearance:none; appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+    background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%; background-size:5px 5px; background-repeat:no-repeat; }
+  .rng { display:flex; justify-content:space-between; font-size:14px; font-variant-numeric:tabular-nums; }
+  input[type=range] { width:100%; accent-color:var(--accent); height:28px; }
+  .sheet-actions { display:flex; gap:8px; margin-top:6px; }
+  .sheet-actions .btn { flex:1; }
+
+  /* Compare table */
+  .ctable { width:100%; border-collapse:collapse; font-size:14px; }
+  .ctable th, .ctable td { text-align:left; vertical-align:top; padding:9px 6px; border-bottom:1px solid var(--line); }
+  .ctable th { color:var(--muted); font-size:12px; font-weight:600; width:84px; }
+  .ctable td b { font-size:15px; }
+  .ctable .rm { border:0; background:var(--chip); border-radius:8px; padding:3px 8px; font-size:12px; margin-top:6px; }
+  .ctable .best { color:var(--accent); font-weight:700; }
+  .cscroll { overflow-x:auto; }
+
+  footer { color:var(--muted); font-size:12px; text-align:center; margin:24px 0 8px; line-height:1.5; }
+  .hidden { display:none !important; }
+  @media (min-width:600px){ .cards2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; } .cards2 .card { margin:0; } }
+</style>
 </head>
 <body>
 
-<div class="header-app text-center">
-    <h3 class="mb-1 fw-bold">🚜 AgriDB Mobile</h3>
-    <p class="mb-0 text-white-55 small">Catalogo Globale Trattori & Mietitrebbie</p>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>🚜 AgriDB</h1>
+      <div class="sub">Trattori e mietitrebbie: gamme e stabilimenti</div>
+    </div>
+    <button class="icon-btn" id="themeBtn" aria-label="Cambia tema">🌓</button>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><b id="stModels">0</b><span>gamme</span></div>
+    <div class="stat"><b id="stBrands">0</b><span>marchi</span></div>
+    <div class="stat"><b id="stPlants">0</b><span>stabilimenti</span></div>
+  </div>
+
+  <div class="seg" role="tablist">
+    <button id="tabModels" class="on" role="tab">Modelli</button>
+    <button id="tabPlants" role="tab">Stabilimenti</button>
+  </div>
 </div>
 
-<div class="container px-3">
-    
-    <!-- Pannello dei Filtri Touch-Friendly -->
-    <div class="filter-card">
-        <h6 class="fw-bold mb-3 text-secondary">🔍 Filtra Database</h6>
-        <div class="row g-2">
-            <!-- Ricerca Globale -->
-            <div class="col-12 mb-1">
-                <input type="text" id="globalSearch" class="form-control" placeholder="Cerca qualsiasi termine..." onkeyup="filterTable()">
-            </div>
-            <!-- Filtri a tendina -->
-            <div class="col-6">
-                <select id="filterBrand" class="form-select" onchange="filterTable()">
-                    <option value="">Brand: Tutti</option>
-                </select>
-            </div>
-            <div class="col-6">
-                <select id="filterTipo" class="form-select" onchange="filterTable()">
-                    <option value="">Tipo: Tutti</option>
-                </select>
-            </div>
-            <div class="col-6">
-                <select id="filterPaese" class="form-select" onchange="filterTable()">
-                    <option value="">Paese: Tutti</option>
-                </select>
-            </div>
-            <div class="col-6">
-                <select id="filterFamiglia" class="form-select" onchange="filterTable()">
-                    <option value="">Famiglia: Tutte</option>
-                </select>
-            </div>
-            <div class="col-12 mt-2">
-                <button class="btn btn-reset w-100" onclick="resetFilters()">Resetta Tutti i Filtri</button>
-            </div>
-        </div>
+<div class="toolbar" id="toolbar">
+  <div class="wrap">
+    <div class="searchrow">
+      <div class="search">
+        <span class="mag">🔍</span>
+        <input id="q" type="search" inputmode="search" autocomplete="off" placeholder="Modello, città o CV (es. 80-100)">
+        <button class="clear" id="qClear" aria-label="Cancella">✕</button>
+      </div>
+      <button class="filterbtn" id="filterBtn">Filtri<span class="badge" id="fBadge"></span></button>
     </div>
+    <div class="chips" id="typeChips"></div>
+    <div class="chips" id="groupChips"></div>
+    <div class="chips" id="hpChips"></div>
+  </div>
+</div>
 
-    <!-- Contatore Risultati -->
-    <div class="d-flex justify-content-between align-items-center mb-3 px-1">
-        <span id="resultCount" class="small text-muted fw-semibold">Caricamento...</span>
+<main class="wrap">
+  <section id="viewModels">
+    <div class="resbar">
+      <span class="count" id="count"></span>
+      <select class="sortsel" id="sort" aria-label="Ordina">
+        <option value="brand">Ordina: Marchio ▾</option>
+        <option value="hpAsc">Ordina: Potenza ↑</option>
+        <option value="hpDesc">Ordina: Potenza ↓</option>
+        <option value="country">Ordina: Paese ▾</option>
+      </select>
     </div>
+    <div id="famNote" class="note" style="margin:-4px 2px 10px"></div>
+    <div id="list"></div>
+  </section>
 
-    <!-- Lista Risultati in stile Card -->
-    <div id="cardContainer"></div>
+  <section id="viewPlants" class="hidden">
+    <div class="resbar"><span class="count" id="pcount"></span><span class="count">Tocca per vedere i modelli</span></div>
+    <div id="plants"></div>
+  </section>
 
+  <footer>
+    Dati indicativi, raccolti da fonti pubbliche (siti dei costruttori, stampa di settore) e aggiornati a settembre 2026.<br>
+    Potenze in CV nominali/massimi. La norma emissioni è quella principale del paese di produzione.<br>
+    Verifica sempre con le fonti ufficiali prima di usarli in documenti.
+  </footer>
+</main>
+
+<!-- Barra confronto -->
+<div class="cbar" id="cbar">
+  <div class="in">
+    <span class="txt" id="cbarTxt"></span>
+    <button class="btn sec" id="cClear">Svuota</button>
+    <button class="btn pri" id="cOpen">Confronta</button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<!-- Foglio filtri -->
+<div class="sheet" id="filterSheet" aria-hidden="true">
+  <div class="grab"></div>
+  <div class="sheet-h"><button id="fReset">Azzera</button><h2>Filtri</h2><button id="fDone">Fine</button></div>
+  <div class="sheet-b">
+    <div class="field"><label for="fBrand">Marchio</label><select id="fBrand"></select></div>
+    <div class="field"><label for="fSeg">Segmento</label><select id="fSeg"></select></div>
+    <div class="field"><label for="fCountry">Paese di produzione</label><select id="fCountry"></select></div>
+    <div class="field">
+      <label>Potenza (CV)</label>
+      <div class="rng"><span>Minima</span><b id="hpMinV"></b></div>
+      <input type="range" id="hpMin" min="0" max="850" step="5">
+      <div class="rng"><span>Massima</span><b id="hpMaxV"></b></div>
+      <input type="range" id="hpMax" min="0" max="850" step="5">
+      <div class="rng" style="margin-top:6px"><span style="color:var(--muted);font-size:13px">Vengono mostrati solo i modelli che rientrano nella fascia.</span></div>
+    </div>
+    <div class="sheet-actions"><button class="btn pri" id="fApply">Mostra risultati</button></div>
+  </div>
+</div>
+
+<!-- Foglio confronto -->
+<div class="sheet" id="cmpSheet" aria-hidden="true">
+  <div class="grab"></div>
+  <div class="sheet-h"><span style="width:60px"></span><h2>Confronto</h2><button id="cDone">Fine</button></div>
+  <div class="sheet-b"><div class="cscroll" id="cmpBody"></div></div>
 </div>
 
 <script>
-    const data = [
-        { brand: "Claas", tipo: "Trattore", famiglia: "Elos / Atos", modello: "Utility leggeri", hp: "75 - 100 HP", emissioni: "Stage V", paese: "Portogallo", stabilimento: "Tramagal" },
-        { brand: "Claas", tipo: "Trattore", famiglia: "Arion", modello: "Arion 500 / 600", hp: "125 - 205 HP", emissioni: "Stage V", paese: "Francia", stabilimento: "Le Mans" },
-        { brand: "Claas", tipo: "Trattore", famiglia: "Axion", modello: "Axion 800 / 900", hp: "205 - 450 HP", emissioni: "Stage V", paese: "Francia", stabilimento: "Le Mans" },
-        { brand: "Claas", tipo: "Trattore", famiglia: "Xerion", modello: "Xerion 4200-5000 / Serie 12", hp: "450 - 653 HP", emissioni: "Stage V / Tier 4 Final", paese: "Germania", stabilimento: "Harsewinkel" },
-        { brand: "Claas", tipo: "Mietitrebbia", famiglia: "Crop Tiger", modello: "Serie compatte", hp: "60 - 120 HP", emissioni: "Stage V / Standard locali", paese: "India", stabilimento: "Chandigarh" },
-        { brand: "Claas", tipo: "Mietitrebbia", famiglia: "Trion", modello: "Trion 500 / 600 / 700", hp: "258 - 435 HP", emissioni: "Stage V", paese: "Germania", stabilimento: "Harsewinkel" },
-        { brand: "Claas", tipo: "Mietitrebbia", famiglia: "Lexion", modello: "Lexion 5000-8000", hp: "313 - 790 HP", emissioni: "Stage V / Tier 4 Final", paese: "Germania", stabilimento: "Harsewinkel" },
-        { brand: "Claas", tipo: "Mietitrebbia", famiglia: "Lexion (US)", modello: "Lexion Nord America", hp: "350 - 790 HP", emissioni: "Stage V / Tier 4 Final", paese: "Stati Uniti (USA)", stabilimento: "Omaha, Nebraska" },
-        
-        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "Workmaster", modello: "Workmaster / Serie C", hp: "20 - 60 HP", emissioni: "Stage V / TREM-IV", paese: "Italia", stabilimento: "Jesi" },
-        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "Workmaster Globale", modello: "Workmaster (India)", hp: "20 - 110 HP", emissioni: "Stage V / TREM-IV", paese: "India", stabilimento: "Greater Noida" },
-        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland T4 / T5", modello: "T4 / T5 compatti", hp: "75 - 120 HP", emissioni: "Stage V / Tier 4B ECOBlue", paese: "Italia", stabilimento: "Jesi (Ancona)" },
-        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland T4 / T3", modello: "T4 / T3 Utility", hp: "55 - 115 HP", emissioni: "Stage V / Tier 4", paese: "Turchia", stabilimento: "Ankara" },
-        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland TT60 / T580", modello: "TT60 Classic / T580", hp: "55 HP", emissioni: "Stage V (Faz 5)", paese: "Turchia", stabilimento: "Türk Traktör (Ankara / Erenler)" },
-        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland 66s", modello: "60-66s / 70-66s / 75-66s", hp: "60 - 75 HP", emissioni: "Stage V (Faz 5)", paese: "Turchia", stabilimento: "Türk Traktör (Ankara / Erenler)" },
-        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland TD4B", modello: "TD4B (fuori produzione)", hp: "65 - 88 HP", emissioni: "Fuori produzione", paese: "Turchia", stabilimento: "Türk Traktör (Ankara / Erenler)" },
-        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland TD5", modello: "TD5 (fuori produzione)", hp: "65 - 113 HP", emissioni: "Fuori produzione", paese: "Turchia", stabilimento: "Türk Traktör (Ankara / Erenler)" },
-        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland T5 (Turchia)", modello: "T5 S / T5 Bluemaster", hp: "90 - 117 HP", emissioni: "Stage V (Faz 5)", paese: "Turchia", stabilimento: "Türk Traktör (Ankara / Erenler)" },
-        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland TR5", modello: "TR5 Electro Command", hp: "90 - 120 HP", emissioni: "Stage V (Faz 5)", paese: "Turchia", stabilimento: "Türk Traktör (Ankara / Erenler)" },
-        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland TR6", modello: "TR6 S", hp: "125 - 175 HP", emissioni: "Stage V (Faz 5)", paese: "Turchia", stabilimento: "Türk Traktör (Ankara / Erenler)" },
-        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland T6", modello: "T6 Methane Power", hp: "140 - 180 HP", emissioni: "Stage V (A metano)", paese: "Regno Unito", stabilimento: "Basildon" },
-        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland T7", modello: "T7 / T7 HD", hp: "150 - 315 HP", emissioni: "Stage V (HI-eSCR2)", paese: "Regno Unito", stabilimento: "Basildon" },
-        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "Alta Potenza", modello: "Pieno campo sinergici", hp: "150 - 300+ HP", emissioni: "Stage V", paese: "Austria", stabilimento: "St. Valentin" },
-        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland T8", modello: "T8 / T8 Genesis", hp: "320 - 435 HP", emissioni: "Stage V", paese: "Stati Uniti (USA)", stabilimento: "Racine, Wisconsin" },
-        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland T9", modello: "T9 / T9 Quantum", hp: "450 - 670 HP", emissioni: "Stage V", paese: "Stati Uniti (USA)", stabilimento: "Fargo, North Dakota" },
-        { brand: "CNH Industrial", tipo: "Trattore", famiglia: "New Holland T8 (Sud America)", modello: "T8 Genesis SA", hp: "320 - 435 HP", emissioni: "Stage V / Tier 3-4", paese: "Brasile", stabilimento: "Curitiba" },
-        { brand: "CNH Industrial", tipo: "Mietitrebbia", famiglia: "New Holland TC", modello: "TC / Medie", hp: "175 - 300 HP", emissioni: "Stage V / Tier 4", paese: "Polonia", stabilimento: "Płock" },
-        { brand: "CNH Industrial", tipo: "Mietitrebbia", famiglia: "New Holland CR (SA)", modello: "CR / TC Sud America", hp: "250 - 600 HP", emissioni: "Stage V / Tier 3-4", paese: "Brasile / Argentina", stabilimento: "Sorocaba / Córdoba" },
-        { brand: "CNH Industrial", tipo: "Mietitrebbia", famiglia: "New Holland CX", modello: "CX Conventional", hp: "272 - 460 HP", emissioni: "Stage V", paese: "Belgio", stabilimento: "Zedelgem" },
-        { brand: "CNH Industrial", tipo: "Mietitrebbia", famiglia: "New Holland CR", modello: "CR Twin Rotor", hp: "415 - 635 HP", emissioni: "Stage V", paese: "Belgio", stabilimento: "Zedelgem" },
-        { brand: "CNH Industrial", tipo: "Mietitrebbia", famiglia: "New Holland CR (US)", modello: "CR / Axial-Flow USA", hp: "415 - 600+ HP", emissioni: "Stage V / Tier 4 Final", paese: "Stati Uniti (USA)", stabilimento: "Grand Island, Nebraska" },
-        { brand: "CNH Industrial", tipo: "Mietitrebbia", famiglia: "New Holland CR Next Gen", modello: "CR10 / CR11", hp: "634 - 775 HP", emissioni: "Stage V", paese: "Belgio", stabilimento: "Zedelgem" },
+/* =========================================================
+   DATI
+   [gruppo, marchio, tipo, segmento, famiglia, modelli, cvMin, cvMax, paese, stabilimento, nota]
+   ========================================================= */
+const RAW = [
+  // ---- CNH: New Holland ----
+  ["CNH","New Holland","Trattore","Compatto","Boomer / Workmaster compatti","Boomer 25–55, Workmaster 25–40",24,57,"Corea del Sud","Wanju (partner OEM)",""],
+  ["CNH","New Holland","Trattore","Specializzato","T4 F / N / V / LP","Frutteto, vigneto, basso profilo",75,120,"Italia","Jesi",""],
+  ["CNH","New Holland","Trattore","Medio","T5 Utility / Dual Command / Auto Command","T5.90 – T5.140",75,140,"Italia","Jesi",""],
+  ["CNH","New Holland","Trattore","Utility","T4 / T4S / T3","Utility per mercato turco ed export",55,115,"Turchia","Erenler / Ankara (Türk Traktör)",""],
+  ["CNH","New Holland","Trattore","Utility","TT60 / T580","TT60 Classic / T580",55,55,"Turchia","Erenler / Ankara (Türk Traktör)",""],
+  ["CNH","New Holland","Trattore","Utility","66s","60-66s / 70-66s / 75-66s",60,75,"Turchia","Erenler / Ankara (Türk Traktör)",""],
+  ["CNH","New Holland","Trattore","Utility","TD4B","TD4B",65,88,"Turchia","Erenler / Ankara (Türk Traktör)","Fuori produzione"],
+  ["CNH","New Holland","Trattore","Utility","TD5","TD5",65,113,"Turchia","Erenler / Ankara (Türk Traktör)","Fuori produzione"],
+  ["CNH","New Holland","Trattore","Medio","T5 (Turchia)","T5 S / T5 Bluemaster",90,117,"Turchia","Erenler / Ankara (Türk Traktör)",""],
+  ["CNH","New Holland","Trattore","Medio","TR5","TR5 Electro Command",90,120,"Turchia","Erenler / Ankara (Türk Traktör)",""],
+  ["CNH","New Holland","Trattore","Medio","TR6","TR6 S",125,175,"Turchia","Erenler / Ankara (Türk Traktör)",""],
+  ["CNH","New Holland","Trattore","Utility","Serie TX / Workmaster (India)","3630 TX – Workmaster 105",35,106,"India","Greater Noida",""],
+  ["CNH","New Holland","Trattore","Medio","T6 (incl. Methane Power)","T6.125 – T6.180",125,180,"Regno Unito","Basildon",""],
+  ["CNH","New Holland","Trattore","Alta potenza","T7 Standard / LWB","T7.165 – T7.315",150,313,"Regno Unito","Basildon",""],
+  ["CNH","New Holland","Trattore","Alta potenza","T7 Heavy Duty","T7.300 – T7.340 HD",300,340,"Austria","St. Valentin","Produzione spostata da Basildon a St. Valentin"],
+  ["CNH","New Holland","Trattore","Alta potenza","T8 Genesis","T8.320 – T8.435",320,435,"Stati Uniti","Racine, Wisconsin",""],
+  ["CNH","New Holland","Trattore","Alta potenza","T8 Genesis (Sud America)","T8 per Brasile e Argentina",320,435,"Brasile","Curitiba",""],
+  ["CNH","New Holland","Trattore","Grandi potenze","T9 / T9 SmartTrax","T9.435 – T9.700",435,700,"Stati Uniti","Fargo, North Dakota",""],
+  ["CNH","New Holland","Mietitrebbia","Convenzionale","TC","TC4.90 – TC5.30",175,300,"Polonia","Płock",""],
+  ["CNH","New Holland","Mietitrebbia","Convenzionale","CX5 / CX6","CX5.80 – CX6.90",230,340,"Polonia","Płock",""],
+  ["CNH","New Holland","Mietitrebbia","Convenzionale","CX7 / CX8","CX7.80 – CX8.90",300,460,"Belgio","Zedelgem",""],
+  ["CNH","New Holland","Mietitrebbia","Rotore","CR Revelation","CR7.80 – CR9.90",390,680,"Belgio","Zedelgem",""],
+  ["CNH","New Holland","Mietitrebbia","Rotore","CR10 / CR11","CR10.90 – CR11",634,775,"Belgio","Zedelgem",""],
+  ["CNH","New Holland","Mietitrebbia","Rotore","CR (Sud America)","CR per Brasile e Argentina",250,600,"Brasile","Sorocaba",""],
+  ["CNH","New Holland","Mietitrebbia","Convenzionale","TC (Sud America)","TC per il mercato brasiliano",175,260,"Brasile","Curitiba",""],
+  // ---- CNH: Case IH ----
+  ["CNH","Case IH","Trattore","Specializzato","Farmall C / Quantum","Frutteto, vigneto, utility",55,117,"Italia","Jesi",""],
+  ["CNH","Case IH","Trattore","Utility","Farmall A","Farmall 85A – 115A",85,115,"Turchia","Erenler / Ankara (Türk Traktör)",""],
+  ["CNH","Case IH","Trattore","Medio","Luxxum / Vestrum / Maxxum","Luxxum 100 – Maxxum 150",100,150,"Austria","St. Valentin",""],
+  ["CNH","Case IH","Trattore","Alta potenza","Puma","Puma 150 – 260 CVXDrive",150,260,"Austria","St. Valentin",""],
+  ["CNH","Case IH","Trattore","Alta potenza","Optum","Optum 250 – 340 CVXDrive",250,340,"Austria","St. Valentin",""],
+  ["CNH","Case IH","Trattore","Alta potenza","Magnum","Magnum 250 – 400",250,400,"Stati Uniti","Racine, Wisconsin",""],
+  ["CNH","Case IH","Trattore","Grandi potenze","Steiger / Quadtrac","Steiger 420 – 715",420,715,"Stati Uniti","Fargo, North Dakota",""],
+  ["CNH","Case IH","Mietitrebbia","Rotore","Axial-Flow","Serie 150 / 250 / 260",310,634,"Stati Uniti","Grand Island, Nebraska",""],
+  ["CNH","Case IH","Mietitrebbia","Rotore","Axial-Flow (Sud America)","Mercato brasiliano",250,550,"Brasile","Sorocaba",""],
+  // ---- CNH: Steyr ----
+  ["CNH","Steyr","Trattore","Medio","Multi / Expert / Profi","Multi 4100 – Profi 4145",100,145,"Austria","St. Valentin",""],
+  ["CNH","Steyr","Trattore","Alta potenza","Absolut / Terrus CVT","Absolut 6175 – Terrus 6300",175,300,"Austria","St. Valentin",""],
 
-        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 1", modello: "1E, 1M, 1R", hp: "21 - 25 HP", emissioni: "Stage V / Tier 4", paese: "India", stabilimento: "Pune" },
-        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 1, 3 e 4", modello: "Sub-compatti US", hp: "21 - 66 HP", emissioni: "Stage V / Tier 4", paese: "Stati Uniti (USA)", stabilimento: "Augusta, Georgia" },
-        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 5", modello: "5E, 5M, 5R", hp: "75 - 130 HP", emissioni: "Stage V / Tier 4 Final", paese: "Germania", stabilimento: "Mannheim" },
-        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 5 (India)", modello: "5E India", hp: "75 - 130 HP", emissioni: "Stage V / Tier 4 Final", paese: "India", stabilimento: "Pune" },
-        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 5 (Messico)", modello: "5E / Utility Messico", hp: "75 - 130 HP", emissioni: "Stage V / Tier 4 Final", paese: "Messico", stabilimento: "Ramos Arizpe / Monterrey" },
-        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 6", modello: "6M, 6R", hp: "95 - 250 HP", emissioni: "Stage V", paese: "Germania", stabilimento: "Mannheim" },
-        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 7", modello: "7R", hp: "210 - 350 HP", emissioni: "Stage V / Tier 4 Final", paese: "Stati Uniti (USA)", stabilimento: "Waterloo, Iowa" },
-        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 8", modello: "8R, 8RT, 8RX", hp: "230 - 540 HP", emissioni: "Stage V / Tier 4 Final", paese: "Stati Uniti (USA)", stabilimento: "Waterloo, Iowa" },
-        { brand: "John Deere", tipo: "Trattore", famiglia: "Serie 9", modello: "9R, 9RX", hp: "384 - 913 HP", emissioni: "Stage V / Tier 4 Final", paese: "Stati Uniti (USA)", stabilimento: "Waterloo, Iowa" },
-        { brand: "John Deere", tipo: "Mietitrebbia", famiglia: "Serie Media", modello: "Mercati Asiatici", hp: "120 - 250 HP", emissioni: "Standard Locali", paese: "Cina", stabilimento: "Jiamusi / Tianjin" },
-        { brand: "John Deere", tipo: "Mietitrebbia", famiglia: "Serie S / W / T (SA)", modello: "Sud America", hp: "250 - 500 HP", emissioni: "Stage V / Tier 3", paese: "Brasile", stabilimento: "Horizontina" },
-        { brand: "John Deere", tipo: "Mietitrebbia", famiglia: "Serie S", modello: "S7 600 / S7 700", hp: "367 - 460 HP", emissioni: "Stage V / Tier 4 Final", paese: "Stati Uniti (USA)", stabilimento: "East Moline, Illinois" },
-        { brand: "John Deere", tipo: "Mietitrebbia", famiglia: "Serie S", modello: "S7 800 / S7 900", hp: "540 - 617 HP", emissioni: "Stage V / Tier 4 Final", paese: "Stati Uniti (USA)", stabilimento: "East Moline, Illinois" },
-        { brand: "John Deere", tipo: "Mietitrebbia", famiglia: "Serie X9", modello: "X9 1000 / X9 1100", hp: "549 - 690 HP", emissioni: "Stage V / Tier 4 Final", paese: "Stati Uniti (USA)", stabilimento: "East Moline, Illinois" }
-    ];
+  // ---- Deere & Co. ----
+  ["Deere","John Deere","Trattore","Compatto","Serie 1 – 4","1E – 4M",22,66,"Stati Uniti","Augusta, Georgia",""],
+  ["Deere","John Deere","Trattore","Utility","5D / 5E (India)","5036D – 5075E",36,75,"India","Pune",""],
+  ["Deere","John Deere","Trattore","Utility","5M","5075M – 5125M",75,125,"Stati Uniti","Augusta, Georgia",""],
+  ["Deere","John Deere","Trattore","Utility","5E (Messico)","Utility per l'America Latina",75,130,"Messico","Ramos Arizpe","Dato da verificare"],
+  ["Deere","John Deere","Trattore","Medio","5R","5090R – 5125R",90,125,"Germania","Mannheim",""],
+  ["Deere","John Deere","Trattore","Specializzato","5G (GF / GN / GV)","Frutteto e vigneto",75,105,"Italia","Rovigo (partner Carraro)",""],
+  ["Deere","John Deere","Trattore","Alta potenza","6M / 6R","6M 95 – 6R 250",95,250,"Germania","Mannheim",""],
+  ["Deere","John Deere","Trattore","Alta potenza","7R","7R 210 – 7R 350",210,350,"Stati Uniti","Waterloo, Iowa",""],
+  ["Deere","John Deere","Trattore","Alta potenza","8R / 8RT / 8RX","8R 230 – 8RX 410",230,540,"Stati Uniti","Waterloo, Iowa",""],
+  ["Deere","John Deere","Trattore","Grandi potenze","9R / 9RT / 9RX","9R 390 – 9RX 830",390,830,"Stati Uniti","Waterloo, Iowa",""],
+  ["Deere","John Deere","Mietitrebbia","Convenzionale","Serie W / T","W330 – T670",250,460,"Germania","Zweibrücken",""],
+  ["Deere","John Deere","Mietitrebbia","Rotore","Serie S7","S7 600 – S7 900",367,617,"Stati Uniti","East Moline, Illinois",""],
+  ["Deere","John Deere","Mietitrebbia","Rotore","Serie X9","X9 1000 / X9 1100",549,690,"Stati Uniti","East Moline, Illinois",""],
+  ["Deere","John Deere","Mietitrebbia","Rotore","Serie S (Sud America)","Mercato brasiliano",250,500,"Brasile","Horizontina",""],
+  ["Deere","John Deere","Mietitrebbia","Convenzionale","Serie media (Asia)","Mercati asiatici",120,250,"Cina","Jiamusi",""],
 
-    // Dettaglio modelli per serie (chiave = famiglia). HP = potenza massima motore da fonti ufficiali/rivenditori.
-    // verifica: true = dati incompleti o da confermare
-    const modelli = {
-        "Workmaster": { righe: [["Workmaster 25","25 HP"],["Workmaster 35","35 HP"],["Workmaster 40","40 HP"],["Workmaster 50","53 HP"],["Workmaster 60","60 HP"]] },
-        "Workmaster Globale": { righe: [["Simba 20","20 HP"],["Simba 30","30 HP"],["3230 NX / TX","42 HP"],["3600-2 TX","50 HP"],["3630 TX Super","50 HP"],["Excel 4710","50 HP"],["5620 TX Plus","65 HP"],["5630 TX Plus","75 HP"],["Workmaster 105","106 HP"]] },
-        "New Holland T4 / T5": { righe: [["T5.80 Dual Command","80 HP"],["T5.90 Dual Command","90 HP"],["T5.100 Dual Command","101 HP"],["T5.110 Dual Command","110 HP"],["T5.120 Dual Command","117 HP"]] },
-        "New Holland T4 / T3": { righe: [["T3.60B / T3.60F","55 HP"],["T3.70B / T3.70F / T3.70S","65 HP"],["T3.75B / T3.75F","75 HP"],["T4.60S","60 HP"],["T4.70S","70 HP"],["T4.75S","75 HP"],["T4.70B","65 HP"],["T4.80B","75 HP"],["T4.90B","86 HP"],["T4.100B","99 HP"],["T4.110B","110 HP"]] },
-        "New Holland TT60 / T580": { righe: [["TT60 Classic","55 HP"],["T580B","55 HP"],["T580S","55 HP"]] },
-        "New Holland 66s": { righe: [["60-66s","60 HP"],["70-66s","70 HP"],["75-66s","75 HP"]] },
-        "New Holland TD4B": { verifica: true, righe: [["TD4.65B","65 HP"],["TD4.78B","75 HP"],["TD4.80B","80 HP"],["TD4.90B","88 HP"]] },
-        "New Holland TD5": { righe: [["TD5.65","65 HP"],["TD5.75","72 HP"],["TD5.85","82 HP"],["TD5.95","95 HP"],["TD5.105","106 HP"],["TD5.115","113 HP"]] },
-        "New Holland T5 (Turchia)": { righe: [["T5.90 S","90 HP"],["T5.100 S","100 HP"],["T5.110 S","110 HP"],["T5.90 Bluemaster","90 HP"],["T5.100 Bluemaster","100 HP"],["T5.110 Bluemaster","110 HP"],["T5.120 Bluemaster","117 HP"]] },
-        "New Holland TR5": { verifica: true, righe: [["TR5.90 EC","90 HP"],["TR5.100 EC","100 HP"],["TR5.110 EC","110 HP"],["TR5.120 EC","120 HP"]] },
-        "New Holland TR6": { righe: [["TR6.125 S","125 HP"],["TR6.135 S","135 HP"],["TR6.145 S","145 HP"],["TR6.160 S","160 HP"],["TR6.170 S","175 HP"]] },
-        "New Holland T6": { righe: [["T6.180 Methane Power","175 HP"]] },
-        "New Holland T7": { righe: [["T7.165 S","165 HP"],["T7.195 S","190 HP"],["T7.215 S","214 HP"],["T7.230","200 HP"],["T7.245","220 HP"],["T7.260","240 HP"],["T7.270","260 HP"],["T7.290 HD","288 HP"],["T7.315 HD","313 HP"],["T7.340 HD","340 HP"]] },
-        "Alta Potenza": { verifica: true, righe: [] },
-        "New Holland T8": { righe: [["T8.320","284 HP"],["T8.350","315 HP"],["T8.380","347 HP"],["T8.410","374 HP"],["T8.435","417 HP"]] },
-        "New Holland T9": { righe: [["T9.470","467 HP"],["T9.520","522 HP"],["T9.580","578 HP"],["T9.615","614 HP"],["T9.655","656 HP"],["T9.700 SmartTrax","699 HP"]] },
-        "New Holland T8 (Sud America)": { verifica: true, righe: [["T8.320","284 HP"],["T8.350","315 HP"],["T8.380","347 HP"],["T8.410","374 HP"],["T8.435","417 HP"]] },
-        "New Holland TC": { righe: [["TC4.90","175 HP"],["TC5.70","175 HP"],["TC5.80","227 HP"],["TC5.90","258 HP"]] },
-        "New Holland CR (SA)": { righe: [["TC 4.90","223 CV"],["TC 5.90","272 CV"],["CR 5.85","272 CV"],["CR 6.80","313 CV"],["CR 7.80","378 CV"],["CR 7.90","435 CV"],["CR 8.90","503 CV"]] },
-        "New Holland CX": { verifica: true, righe: [["CX5.80 / CX5.90 / CX6.80 / CX6.90","258 - 340 HP"],["CX7.80","340 HP"],["CX7.90","374 HP"],["CX8.70","374 HP"],["CX8.80","415 HP"],["CX8.90","460 HP"]] },
-        "New Holland CR": { righe: [["CR7.80","415 HP"],["CR7.90","460 HP"],["CR8.80","517 HP"],["CR8.90","544 HP"],["CR9.90","600 HP"],["CR10.90","700 HP"]] },
-        "New Holland CR (US)": { righe: [["CR7.80","415 HP"],["CR7.90","460 HP"],["CR8.90","571 HP"],["CR9.90","600 HP"],["CR10.90","700 HP"]] },
-        "New Holland CR Next Gen": { righe: [["CR10","635 HP"],["CR11","775 HP"]] }
-    };
+  // ---- Claas ----
+  ["Claas","Claas","Trattore","Specializzato","Elios / Nexos","Elios 210 – Nexos 260",75,120,"Italia","Rovigo (partner Carraro)",""],
+  ["Claas","Claas","Trattore","Utility","Atos","Atos 220 – 350",75,110,"Italia","Treviglio (partner SDF)",""],
+  ["Claas","Claas","Trattore","Medio","Arion 400 – 600","Arion 420 – 660",90,205,"Francia","Le Mans",""],
+  ["Claas","Claas","Trattore","Alta potenza","Axion 800 / 900","Axion 800 – 960 (anche Terra Trac)",205,445,"Francia","Le Mans",""],
+  ["Claas","Claas","Trattore","Grandi potenze","Xerion 12","Xerion 12.590 – 12.650 (anche Terra Trac)",585,653,"Germania","Harsewinkel",""],
+  ["Claas","Claas","Mietitrebbia","Convenzionale","Crop Tiger","Crop Tiger 30 / 40",60,120,"India","Morinda (Chandigarh)",""],
+  ["Claas","Claas","Mietitrebbia","Ibrida","Trion 500 – 700","Trion 520 – 760",258,435,"Germania","Harsewinkel",""],
+  ["Claas","Claas","Mietitrebbia","Ibrida","Lexion 5000 – 8000","Lexion 5300 – 8900",313,790,"Germania","Harsewinkel",""],
+  ["Claas","Claas","Mietitrebbia","Ibrida","Lexion (Nord America)","Lexion per USA e Canada",350,790,"Stati Uniti","Omaha, Nebraska",""],
 
-    function toggleDettaglio(id) {
-        const el = document.getElementById("det-" + id);
-        if (el) el.classList.toggle("d-none");
+  // ---- AGCO ----
+  ["AGCO","Fendt","Trattore","Specializzato","200 Vario V / F / P","Frutteto e vigneto",79,124,"Germania","Marktoberdorf",""],
+  ["AGCO","Fendt","Trattore","Medio","300 / 500 / 600 Vario","311 – 620 Vario",90,224,"Germania","Marktoberdorf",""],
+  ["AGCO","Fendt","Trattore","Alta potenza","700 / 900 Vario","714 – 942 Vario",144,415,"Germania","Marktoberdorf",""],
+  ["AGCO","Fendt","Trattore","Grandi potenze","1000 Vario","1038 – 1050 Vario",396,517,"Germania","Marktoberdorf",""],
+  ["AGCO","Fendt","Trattore","Grandi potenze","900 MT / 1100 MT (cingolati)","943 MT – 1167 MT",431,673,"Stati Uniti","Jackson, Minnesota",""],
+  ["AGCO","Fendt","Mietitrebbia","Rotore","IDEAL","IDEAL 7 – IDEAL 10T",451,790,"Italia","Breganze",""],
+  ["AGCO","Fendt","Mietitrebbia","Convenzionale","Serie C / L","Scuotipaglia",250,360,"Italia","Breganze",""],
+  ["AGCO","Massey Ferguson","Trattore","Utility","MF 4700 M / 5700 M (Global Series)","MF 4707 – 5713 M",70,130,"Cina","Changzhou",""],
+  ["AGCO","Massey Ferguson","Trattore","Medio","MF 5S / 6S / 7S","MF 5S.105 – 7S.210",105,210,"Francia","Beauvais",""],
+  ["AGCO","Massey Ferguson","Trattore","Alta potenza","MF 8S","MF 8S.205 – 8S.305",205,305,"Francia","Beauvais",""],
+  ["AGCO","Massey Ferguson","Trattore","Alta potenza","MF 9S","MF 9S.285 – 9S.425",285,425,"Francia","Beauvais",""],
+  ["AGCO","Massey Ferguson","Mietitrebbia","Convenzionale","MF Activa / Beta","Scuotipaglia",200,360,"Italia","Breganze",""],
+  ["AGCO","Valtra","Trattore","Medio","Serie A / G / N","A75 – N175",75,201,"Finlandia","Suolahti",""],
+  ["AGCO","Valtra","Trattore","Alta potenza","Serie T / Q","T155 – Q305",155,305,"Finlandia","Suolahti",""],
+  ["AGCO","Valtra","Trattore","Medio","Serie A / BH (Sud America)","Mercato brasiliano",75,270,"Brasile","Mogi das Cruzes",""],
+
+  // ---- SDF ----
+  ["SDF","Same","Trattore","Specializzato","Frutteto / Dorado / Explorer / Virtus","Specializzati e utility",60,140,"Italia","Treviglio",""],
+  ["SDF","Deutz-Fahr","Trattore","Medio","Serie 5 / 5G / 5 TTV","5080 – 5125 TTV",75,126,"Italia","Treviglio",""],
+  ["SDF","Deutz-Fahr","Trattore","Alta potenza","Serie 6 / 7 / 8 / 9","6135 – 9340 TTV",136,336,"Germania","Lauingen",""],
+  ["SDF","Lamborghini","Trattore","Medio","Spire / Strike / Mach","Specializzati e pieno campo",60,250,"Italia","Treviglio",""],
+  ["SDF","Deutz-Fahr","Mietitrebbia","Convenzionale","C6000 / C7000 / C9000","C6205 – C9306 TS",200,395,"Croazia","Županja",""],
+
+  // ---- Argo Tractors ----
+  ["Argo","Landini","Trattore","Specializzato","Serie 2 / Rex","Frutteto, vigneto, compatti",50,115,"Italia","San Martino in Rio",""],
+  ["Argo","Landini","Trattore","Medio","Serie 5 / 6 / 7","Landini 5-085 – 7-230",75,230,"Italia","Fabbrico",""],
+  ["Argo","McCormick","Trattore","Medio","X4 – X8","X4.080 – X8.680",75,310,"Italia","Fabbrico",""],
+
+  // ---- Kubota ----
+  ["Kubota","Kubota","Trattore","Compatto","Serie B / L","B1 – L2",21,66,"Giappone","Sakai",""],
+  ["Kubota","Kubota","Trattore","Utility","M4 / M5","M4063 – M5-115",66,115,"Giappone","Tsukuba",""],
+  ["Kubota","Kubota","Trattore","Alta potenza","M7","M7-133 – M7-173",130,175,"Francia","Bierne (Dunkerque)",""],
+  ["Kubota","Kubota","Trattore","Alta potenza","M8","M8-190 / M8-210",190,210,"Canada","Winnipeg (Buhler)",""],
+
+  // ---- India ----
+  ["Mahindra","Mahindra","Trattore","Utility","Arjun / 575 / Yuvo / Novo","Mercato indiano ed export",30,75,"India","Nagpur / Zaheerabad",""],
+  ["Mahindra","Swaraj","Trattore","Utility","Swaraj 717 – 963","Mercato indiano",15,65,"India","Mohali",""],
+  ["TAFE","TAFE","Trattore","Utility","Massey Ferguson India / Eicher","Licenza MF per l'India",25,100,"India","Chennai",""],
+  ["Sonalika","Sonalika / Solis","Trattore","Utility","Sonalika / Solis","Mercato indiano ed export",20,120,"India","Hoshiarpur",""],
+
+  // ---- Altri ----
+  ["MTZ","Belarus","Trattore","Utility","MTZ 82 – 3522","Gamma completa",50,355,"Bielorussia","Minsk",""],
+  ["Rostselmash","Versatile","Trattore","Grandi potenze","4WD / DeltaTrack","Versatile 375 – 640",375,640,"Canada","Winnipeg",""],
+  ["Rostselmash","Rostselmash","Mietitrebbia","Rotore","Torum / Acros / Nova","Acros convenzionale, Torum a rotore",200,520,"Russia","Rostov sul Don",""],
+
+  // ---- Cina ----
+  ["Zoomlion","Zoomlion","Trattore","Utility","RF / RK / ZK","Utility (serie RK ex Chery)",35,75,"Cina","Wuhu, Anhui","Ex Chery Heavy Industry, controllata da Zoomlion dal 2014"],
+  ["Zoomlion","Zoomlion","Trattore","Medio","RN / RC / ZN","RN 904 – RC 1104",90,111,"Cina","Wuhu, Anhui",""],
+  ["Zoomlion","Zoomlion","Trattore","Alta potenza","RS / ZS / RG / PG / ZL / PL","RS 1304 – PL 2304",130,234,"Cina","Wuhu, Anhui","PL2304 sviluppato con il centro R&D nordamericano"],
+  ["Lovol","Lovol","Trattore","Medio","Serie TD","TD 904",90,90,"Cina","Weifang, Shandong",""],
+  ["Lovol","Lovol","Trattore","Alta potenza","Serie M","M1004 – M2604",100,260,"Cina","Weifang, Shandong",""],
+  ["Lovol","Lovol","Trattore","Alta potenza","Serie P","P4100 – P8340",100,340,"Cina","Weifang, Shandong",""],
+  ["Lovol","Lovol","Mietitrebbia","Convenzionale","GM (gommata)","GM100",175,175,"Cina","Weifang, Shandong","Anche GK120 e GV100: potenza non pubblicata"],
+  ["YTO","YTO / Dongfanghong","Trattore","Utility","SK / ESK / EME / NMF / EF / EMF","Utility e compatti",24,75,"Cina","Luoyang, Henan","Potenze minime e massime delle serie ufficiali"],
+  ["YTO","YTO / Dongfanghong","Trattore","Specializzato","Serie Frutteto","Frutteto e vigneto",35,115,"Cina","Luoyang, Henan","Potenze minime e massime della serie ufficiale"],
+  ["YTO","YTO / Dongfanghong","Trattore","Medio","NLX / NLY","80 – 140 CV",80,140,"Cina","Luoyang, Henan","Potenze minime e massime delle serie ufficiali"],
+  ["YTO","YTO / Dongfanghong","Trattore","Alta potenza","ELG / ELX / ELP / ELZ","LX2204, ELX2404 e serie superiori",160,300,"Cina","Luoyang, Henan","Potenze minime e massime delle serie ufficiali"],
+  ["Changfa","Changfa","Trattore","Medio","Serie B / C / DM / EH / EX / F","50 – 100 CV",50,100,"Cina","Changzhou (Wujin), Jiangsu","Nomi modello secondo la convenzione cinese (CV + 4 = 4RM): da verificare"],
+  ["Changfa","Changfa","Trattore","Alta potenza","Serie G / GB / HM / HA / J / K","120 – 240 CV (fino a K2404-7M PRO)",120,240,"Cina","Changzhou (Wujin), Jiangsu","Nomi modello secondo la convenzione cinese (CV + 4 = 4RM): da verificare"],
+  ["Dongfeng","Dongfeng","Trattore","Utility","DF 25 – 75 CV","DF254 – DF754",25,75,"Cina","Changzhou, Jiangsu","Solo DF404 verificato; gli altri nomi seguono la convenzione del costruttore"],
+  ["Dongfeng","Dongfeng","Trattore","Alta potenza","DF 80 – 240 CV","DF804 – DF2404",80,240,"Cina","Changzhou, Jiangsu","Nomi modello secondo la convenzione del costruttore: da verificare"],
+  ["World","World","Trattore","Medio","Trattori FMWorld","454K – cabinato 130 CV",45,130,"Cina","Danyang, Jiangsu",""],
+  ["World","World","Mietitrebbia","Convenzionale","Ruilong Plus","4LZ-6.0P",102,102,"Cina","Danyang, Jiangsu","Leader cinese nelle mietitrebbie; altri modelli (Feilong) senza potenza pubblicata"]
+];
+
+/* =========================================================
+   MODELLI SINGOLI – potenza massima indicativa (CV)
+   Chiave: "Marchio|Famiglia" come nella tabella sopra.
+   Le famiglie senza elenco mostrano solo la fascia complessiva.
+   ========================================================= */
+const MODELS = {
+  "New Holland|Boomer / Workmaster compatti": [["Workmaster 25",25],["Workmaster 35",35],["Workmaster 40",40],["Boomer 45",45],["Boomer 55",57]],
+  "New Holland|T4 F / N / V / LP": [["T4.80",75],["T4.90",86],["T4.100",99],["T4.110",107],["T4.120",120]],
+  "New Holland|T5 Utility / Dual Command / Auto Command": [["T5.80",75],["T5.90",86],["T5.100",99],["T5.110",107],["T5.120",117],["T5.130 AC",130],["T5.140 AC",140]],
+  "New Holland|T4 / T4S / T3": [["T4.55",55],["T4.65",65],["T4.75",75],["T4.85",85],["T4.95",95],["T4.105",105],["T4.115",115]],
+  "New Holland|TT60 / T580": [["TT60 Classic",55],["T580",55]],
+  "New Holland|66s": [["60-66s",60],["70-66s",70],["75-66s",75]],
+  "New Holland|TD4B": [["TD4B (min)",65],["TD4B (max)",88]],
+  "New Holland|TD5": [["TD5 (min)",65],["TD5 (max)",113]],
+  "New Holland|T5 (Turchia)": [["T5 S / Bluemaster (min)",90],["T5 S / Bluemaster (max)",117]],
+  "New Holland|TR5": [["TR5 Electro Command (min)",90],["TR5 Electro Command (max)",120]],
+  "New Holland|TR6": [["TR6 S (min)",125],["TR6 S (max)",175]],
+  "New Holland|Serie TX / Workmaster (India)": [["3032 TX",35],["3230 TX",42],["3630 TX",50],["5620 TX",65],["5630 TX",75],["Workmaster 105",106]],
+  "New Holland|T6 (incl. Methane Power)": [["T6.125",125],["T6.145",145],["T6.155",155],["T6.165",165],["T6.175",175],["T6.180 / Methane Power",180]],
+  "New Holland|T7 Standard / LWB": [["T7.165 S",165],["T7.175",175],["T7.190",190],["T7.210",210],["T7.225",225],["T7.245",245],["T7.260",260],["T7.270",270],["T7.290",290],["T7.315",313]],
+  "New Holland|T7 Heavy Duty": [["T7.300 HD",300],["T7.315 HD",313],["T7.340 HD",340]],
+  "New Holland|T8 Genesis": [["T8.320",320],["T8.350",350],["T8.380",380],["T8.410",410],["T8.435",435]],
+  "New Holland|T8 Genesis (Sud America)": [["T8.320",320],["T8.350",350],["T8.380",380],["T8.410",410]],
+  "New Holland|T9 / T9 SmartTrax": [["T9.435",435],["T9.480",480],["T9.520",520],["T9.565",565],["T9.600",600],["T9.645",645],["T9.700",700]],
+  "New Holland|TC": [["TC4.90",175],["TC5.70",210],["TC5.80",230],["TC5.90",258]],
+  "New Holland|CX5 / CX6": [["CX5.80",258],["CX5.90",284],["CX6.80",306],["CX6.90",340]],
+  "New Holland|CX7 / CX8": [["CX7.80",330],["CX7.90",367],["CX8.70",408],["CX8.80",449],["CX8.90",490]],
+  "New Holland|CR Revelation": [["CR7.80",408],["CR7.90",449],["CR8.80",490],["CR8.90",571],["CR9.90",653]],
+  "New Holland|CR10 / CR11": [["CR10.90",634],["CR11",775]],
+
+  "Case IH|Farmall C / Quantum": [["Farmall 55C",55],["Farmall 65C",65],["Farmall 75C",75],["Quantum 90 F/N/V",86],["Farmall 90C",90],["Farmall 100C",99],["Farmall 110C",107],["Quantum 120 F",114],["Farmall 120C",117]],
+  "Case IH|Farmall A": [["Farmall 85A",86],["Farmall 95A",95],["Farmall 105A",106],["Farmall 115A",114]],
+  "Case IH|Luxxum / Vestrum / Maxxum": [["Luxxum 100",99],["Vestrum 100",100],["Luxxum 110",107],["Vestrum 110",110],["Maxxum 115",116],["Luxxum 120",117],["Vestrum 120",120],["Maxxum 125",126],["Vestrum 130",130],["Maxxum 135",135],["Maxxum 145",145],["Maxxum 150",150]],
+  "Case IH|Puma": [["Puma 150",150],["Puma 165",165],["Puma 175",175],["Puma 185",185],["Puma 200",200],["Puma 220",220],["Puma 240",240],["Puma 260",260]],
+  "Case IH|Optum": [["Optum 250",250],["Optum 270",270],["Optum 300",300],["Optum 340",340]],
+  "Case IH|Magnum": [["Magnum 250",250],["Magnum 280",280],["Magnum 310",310],["Magnum 340",340],["Magnum 380",380],["Magnum 400",400]],
+  "Case IH|Steiger / Quadtrac": [["Steiger 420",420],["Steiger 470",470],["Steiger 500",500],["Steiger 540",540],["Steiger 580",580],["Steiger 620",620],["Steiger 715 Quadtrac",715]],
+  "Case IH|Axial-Flow": [["AF 5150",325],["AF 6150",380],["AF 7250",449],["AF 8250",498],["AF 9250",571],["AF 9260",634]],
+  "Case IH|Axial-Flow (Sud America)": [["AF 4130",250],["AF 7150",380],["AF 8250",498]],
+
+  "Steyr|Multi / Expert / Profi": [["Multi 4100",100],["Multi 4110",110],["Multi 4120",120],["Profi 4125",125],["Profi 4135",135],["Profi 4145",145]],
+  "Steyr|Absolut / Terrus CVT": [["Absolut 6175",175],["Absolut 6185",185],["Absolut 6200",200],["Absolut 6220",220],["Absolut 6240",240],["Terrus 6250",250],["Terrus 6270",270],["Terrus 6300",300]],
+
+  "John Deere|Serie 1 – 4": [["1025R",24],["2038R",37],["3038E",37],["3046R",45],["4052M",51],["4066R",66]],
+  "John Deere|5D / 5E (India)": [["5036D",36],["5045D",45],["5050E",50],["5060E",60],["5075E",75]],
+  "John Deere|5M": [["5075M",75],["5090M",90],["5100M",100],["5115M",115],["5125M",125]],
+  "John Deere|5E (Messico)": [["5075E",75],["5090E",90],["5100E",100]],
+  "John Deere|5R": [["5090R",90],["5100R",100],["5115R",115],["5125R",125]],
+  "John Deere|5G (GF / GN / GV)": [["5075G",75],["5090G",90],["5105G",105]],
+  "John Deere|6M / 6R": [["6095M",95],["6110M",110],["6R 110",110],["6120M",120],["6R 130",130],["6135M",135],["6145M",145],["6R 150",150],["6155M",155],["6175M",175],["6R 185",185],["6195M",195],["6R 215",215],["6R 250",250]],
+  "John Deere|7R": [["7R 210",210],["7R 230",230],["7R 250",250],["7R 270",270],["7R 290",290],["7R 310",310],["7R 330",330],["7R 350",350]],
+  "John Deere|8R / 8RT / 8RX": [["8R 230",230],["8R 250",250],["8R 280",280],["8R/8RT/8RX 310",310],["8R/8RT/8RX 340",340],["8R/8RT/8RX 370",370],["8R/8RT/8RX 410",410]],
+  "John Deere|9R / 9RT / 9RX": [["9R 390",390],["9R/9RX 440",440],["9R/9RT/9RX 490",490],["9R/9RT/9RX 540",540],["9R/9RT/9RX 590",590],["9R/9RX 640",640],["9RX 830",830]],
+  "John Deere|Serie W / T": [["W330",250],["W440",299],["W540",340],["T560",367],["T660",408],["T670",460]],
+  "John Deere|Serie S7": [["S7 600",367],["S7 700",427],["S7 800",507],["S7 850",543],["S7 900",617]],
+  "John Deere|Serie X9": [["X9 1000",549],["X9 1100",690]],
+  "John Deere|Serie S (Sud America)": [["S430",300],["S540",367],["S680",473]],
+
+  "Claas|Elios / Nexos": [["Elios 210",75],["Nexos 220",80],["Elios 220",85],["Nexos 230",90],["Elios 230",95],["Nexos 240",100],["Nexos 250",110],["Nexos 260",117]],
+  "Claas|Arion 400 – 600": [["Arion 420",90],["Arion 430",100],["Arion 440",115],["Arion 450",125],["Arion 510",125],["Arion 460",140],["Arion 530",145],["Arion 470",155],["Arion 550",165],["Arion 630",185],["Arion 650",205],["Arion 660",205]],
+  "Claas|Axion 800 / 900": [["Axion 800",205],["Axion 810",215],["Axion 830",235],["Axion 850",264],["Axion 870",295],["Axion 920",325],["Axion 930",355],["Axion 940",385],["Axion 950",410],["Axion 960",445]],
+  "Claas|Xerion 12": [["Xerion 12.590",585],["Xerion 12.650",653]],
+  "Claas|Trion 500 – 700": [["Trion 520",258],["Trion 530",286],["Trion 640",381],["Trion 660",435],["Trion 750",435],["Trion 760",507]],
+  "Claas|Lexion 5000 – 8000": [["Lexion 5300",313],["Lexion 5500",381],["Lexion 6700",462],["Lexion 8500",549],["Lexion 8600",598],["Lexion 7700",626],["Lexion 8700",646],["Lexion 8800",700],["Lexion 8900",790]],
+
+  "Fendt|200 Vario V / F / P": [["207 Vario",79],["208 Vario",89],["209 Vario",99],["210 Vario",111],["211 Vario",124]],
+  "Fendt|300 / 500 / 600 Vario": [["311 Vario",113],["312 Vario",123],["313 Vario",133],["314 Vario",142],["614 Vario",149],["514 Vario",150],["516 Vario",165],["616 Vario",165],["618 Vario",188],["620 Vario",224]],
+  "Fendt|700 / 900 Vario": [["714 Vario",144],["716 Vario",162],["720 Vario",203],["724 Vario",246],["728 Vario",283],["930 Vario",296],["936 Vario",357],["942 Vario",415]],
+  "Fendt|1000 Vario": [["1038 Vario",396],["1042 Vario",435],["1046 Vario",476],["1050 Vario",517]],
+  "Fendt|900 MT / 1100 MT (cingolati)": [["943 MT",431],["1151 MT",517],["1156 MT",564],["1162 MT",620],["1167 MT",673]],
+  "Fendt|IDEAL": [["IDEAL 7",451],["IDEAL 8",538],["IDEAL 9",647],["IDEAL 10T",790]],
+
+  "Massey Ferguson|MF 4700 M / 5700 M (Global Series)": [["MF 4708 M",80],["MF 4709 M",90],["MF 4710 M",100],["MF 5711 M",110],["MF 5712 M",120],["MF 5713 M",130]],
+  "Massey Ferguson|MF 5S / 6S / 7S": [["MF 5S.105",105],["MF 5S.115",115],["MF 5S.125",125],["MF 5S.135",135],["MF 6S.135",135],["MF 5S.145",145],["MF 6S.145",145],["MF 6S.155",155],["MF 7S.155",155],["MF 6S.165",165],["MF 7S.165",165],["MF 6S.180",180],["MF 7S.180",180],["MF 7S.190",190],["MF 7S.210",210]],
+  "Massey Ferguson|MF 8S": [["MF 8S.205",205],["MF 8S.225",225],["MF 8S.245",245],["MF 8S.265",265],["MF 8S.285",285],["MF 8S.305",305]],
+  "Massey Ferguson|MF 9S": [["MF 9S.285",285],["MF 9S.310",310],["MF 9S.340",340],["MF 9S.370",370],["MF 9S.400",400],["MF 9S.425",425]],
+
+  "Valtra|Serie A / G / N": [["A75",75],["A85",85],["A95",95],["A105",105],["G105",105],["A115",115],["G115",115],["G125",125],["G135",135],["N135",135],["N155",155],["N175",175]],
+  "Valtra|Serie T / Q": [["T155",155],["T175",175],["T195",195],["T215",215],["Q225",225],["T235",235],["Q245",245],["Q265",265],["Q285",285],["Q305",305]],
+
+  "Deutz-Fahr|Serie 5 / 5G / 5 TTV": [["5080",75],["5090",90],["5100",100],["5115",115],["5125 TTV",126]],
+  "Deutz-Fahr|Serie 6 / 7 / 8 / 9": [["6135",136],["6155",155],["6185",185],["6215",215],["6230",230],["7250 TTV",246],["8280 TTV",287],["9340 TTV",336]],
+  "Deutz-Fahr|C6000 / C7000 / C9000": [["C6205 TS",250],["C7206 TS",305],["C9206 TS",395]],
+
+  "Kubota|M4 / M5": [["M4063",66],["M4073",74],["M5-091",95],["M5-111",113]],
+  "Kubota|M7": [["M7-133",130],["M7-153",150],["M7-173",175]],
+  "Kubota|M8": [["M8-190",190],["M8-210",210]]  ,
+  "New Holland|CR (Sud America)": [["CR5.85",275],["CR6.80",306],["CR7.90",449],["CR8.90",571]],
+  "New Holland|TC (Sud America)": [["TC5.30",175],["TC5.90",258]],
+  "John Deere|Serie media (Asia)": [["C120",120],["C230",230]],
+  "Claas|Atos": [["Atos 220",75],["Atos 230",86],["Atos 240",95],["Atos 330",98],["Atos 340",104],["Atos 350",110]],
+  "Claas|Crop Tiger": [["Crop Tiger 30",60],["Crop Tiger 40",101]],
+  "Claas|Lexion (Nord America)": [["Lexion 5500",381],["Lexion 6700",462],["Lexion 8500",549],["Lexion 8600",598],["Lexion 8700",646],["Lexion 8800",700],["Lexion 8900",790]],
+  "Fendt|Serie C / L": [["5225 L",250],["5255 L",306],["6335 C",360]],
+  "Massey Ferguson|MF Activa / Beta": [["Activa 7345",200],["Activa 7347",260],["Beta 7360",306],["Beta 7370",360]],
+  "Valtra|Serie A / BH (Sud America)": [["A750",75],["A950",95],["BH145",145],["BH180",180],["BH224",224],["T250",250]],
+  "Same|Frutteto / Dorado / Explorer / Virtus": [["Dorado 70",68],["Frutteto 85",84],["Explorer 90",88],["Explorer 115",113],["Frutteto CVT 120",113],["Virtus 120",116],["Virtus 140",137]],
+  "Lamborghini|Spire / Strike / Mach": [["Spire 80",75],["Spire 100",97],["Strike 110",105],["Strike 120",116],["Mach 210 VRT",209],["Mach 230 VRT",226],["Mach 250 VRT",246]],
+  "Landini|Serie 2 / Rex": [["2-060",58],["2-070",68],["Rex4-080",75],["Rex4-090",88],["Rex4-100",98],["Rex4-110",107],["Rex4-120 GT",112]],
+  "Landini|Serie 5 / 6 / 7": [["5-085",75],["5-100",99],["5-110",107],["6-125",120],["6-145",136],["7-175",175],["7-190",190],["7-215",215],["7-230",230]],
+  "McCormick|X4 – X8": [["X4.080",75],["X5.100",99],["X6.414",135],["X7.618",175],["X7.690",212],["X8.660",264],["X8.680",310]],
+  "Kubota|Serie B / L": [["B1-241",24],["B2-261",26],["L1-361",36],["L2-501",50],["L2-622",62]],
+  "Mahindra|Arjun / 575 / Yuvo / Novo": [["475 DI",42],["575 DI",45],["Arjun 555",50],["Arjun Novo 605",57],["Novo 755",74]],
+  "Swaraj|Swaraj 717 – 963": [["717",15],["735 FE",40],["744 FE",48],["855 FE",52],["963 FE",65]],
+  "TAFE|Massey Ferguson India / Eicher": [["MF 1035 DI",36],["Eicher 380",40],["MF 241 DI",42],["MF 7250",50],["MF 9500",58]],
+  "Sonalika / Solis|Sonalika / Solis": [["DI 35",39],["DI 745",50],["Tiger 60",60],["Tiger 75",75],["Solis 90",90],["Solis 110",110]],
+  "Belarus|MTZ 82 – 3522": [["MTZ 82.1",81],["MTZ 892",89],["MTZ 1025",105],["MTZ 1221",130],["MTZ 1523",150],["MTZ 2022",212],["MTZ 3022",300],["MTZ 3522",355]],
+  "Versatile|4WD / DeltaTrack": [["375",375],["405",405],["460",460],["500",500],["550",550],["610 DeltaTrack",610],["640",640]],
+  "Rostselmash|Torum / Acros / Nova": [["Vector 450",210],["Nova 340",255],["Acros 550",300],["Torum 750",400],["Torum 785",520]],
+  "Zoomlion|RF / RK / ZK": [["RF 354",35],["RK 504",50],["RK 554",55],["ZK 654",65],["RK 704",70],["RK 754",75],["ZK 754",75]],
+  "Zoomlion|RN / RC / ZN": [["RN 904",90],["RC 904",90],["RC 954",95],["ZN 1004",102],["RN 1104",110],["RC 1104",111]],
+  "Zoomlion|RS / ZS / RG / PG / ZL / PL": [["RS 1304",130],["ZS 1354",142],["RS 1604",160],["RG 1804",180],["RG 2004",200],["PG 2004",200],["ZL 2104",215],["PL 2304",234]],
+  "Lovol|Serie TD": [["TD 904",90]],
+  "Lovol|Serie M": [["M1004 TD",100],["M1204 TD",120],["M1304 TQ",130],["M1504 TR",150],["M1804 TR",180],["M2204 TR",220],["M2604 TN",260]],
+  "Lovol|Serie P": [["P4100",100],["P4110",110],["P5130",130],["P7240",240],["P8340",340]],
+  "Lovol|GM (gommata)": [["GM100",175]],
+  "YTO / Dongfanghong|SK / ESK / EME / NMF / EF / EMF": [["SK/ESK (min)",24],["EME (min)",45],["SK/ESK/EME (max)",55],["NMF (max)",70],["EF/EMF (max)",75]],
+  "YTO / Dongfanghong|Serie Frutteto": [["Frutteto (min)",35],["Frutteto (max)",115]],
+  "YTO / Dongfanghong|NLX / NLY": [["NLX/NLY (min)",80],["NLX/NLY (max)",115],["NLX 130",130],["NLX 140",140]],
+  "YTO / Dongfanghong|ELG / ELX / ELP / ELZ": [["ELG (min)",160],["ELG (max)",195],["LX2204",220],["ELX2404",240],["ELP/ELZ (min)",260],["ELP/ELZ (max)",300]],
+  "Changfa|Serie B / C / DM / EH / EX / F": [["504",50],["604",60],["704",70],["804",80],["904",90],["954",95],["1004",100]],
+  "Changfa|Serie G / GB / HM / HA / J / K": [["1204",120],["1404",140],["1504",150],["1604",160],["1804",180],["2004",200],["2204",220],["2304",230],["K2404-7M PRO",240]],
+  "Dongfeng|DF 25 – 75 CV": [["DF254",25],["DF404",40],["DF504",50],["DF554",55],["DF604",60],["DF704",70],["DF754",75]],
+  "Dongfeng|DF 80 – 240 CV": [["DF804",80],["DF1004",100],["DF1104",110],["DF1304",130],["DF1604",160],["DF1804",180],["DF2004",200],["DF2404",240]],
+  "World|Trattori FMWorld": [["454K",45],["704F",70],["1104B",110],["Cabinato 130",130]],
+  "World|Ruilong Plus": [["Ruilong Plus 4LZ-6.0P",102]]
+};
+
+const BRAND_COLOR = {
+  "New Holland":"#0b58a8","Case IH":"#c8102e","Steyr":"#8e1b1b","John Deere":"#367c2b","Claas":"#7da40b",
+  "Fendt":"#4a7c2a","Massey Ferguson":"#d0021b","Valtra":"#b5122e","Same":"#c0392b","Deutz-Fahr":"#5ea52d",
+  "Lamborghini":"#555b62","Landini":"#1d4fa0","McCormick":"#a3001b","Kubota":"#f26b21","Mahindra":"#c61f2d",
+  "Swaraj":"#b32025","TAFE":"#7a1f2b","Sonalika / Solis":"#1d63b8","Belarus":"#1b5fa8","Versatile":"#d4471c","Rostselmash":"#d6001c",
+  "Zoomlion":"#1a9c3e","Lovol":"#0057a8","YTO / Dongfanghong":"#b3202b","Changfa":"#e0701a","Dongfeng":"#2a6f97","World":"#6a4c93"
+};
+const GROUP_NAME = { CNH:"CNH", Deere:"Deere & Co.", Claas:"Claas", AGCO:"AGCO", SDF:"SDF", Argo:"Argo Tractors",
+  Kubota:"Kubota", Mahindra:"Mahindra", TAFE:"TAFE", Sonalika:"Sonalika (ITL)", MTZ:"MTZ", Rostselmash:"Rostselmash",
+  Zoomlion:"Zoomlion", Lovol:"Weichai Lovol", YTO:"YTO (Sinomach)", Changfa:"Changfa", Dongfeng:"Changzhou Dongfeng", World:"World Group" };
+const FLAG = { "Italia":"🇮🇹","Regno Unito":"🇬🇧","Austria":"🇦🇹","Stati Uniti":"🇺🇸","Turchia":"🇹🇷","India":"🇮🇳",
+  "Corea del Sud":"🇰🇷","Brasile":"🇧🇷","Argentina":"🇦🇷","Polonia":"🇵🇱","Belgio":"🇧🇪","Germania":"🇩🇪","Francia":"🇫🇷",
+  "Messico":"🇲🇽","Cina":"🇨🇳","Giappone":"🇯🇵","Canada":"🇨🇦","Finlandia":"🇫🇮","Croazia":"🇭🇷","Bielorussia":"🇧🇾","Russia":"🇷🇺" };
+const EMISSION = { "Stati Uniti":"Tier 4 Final","Canada":"Tier 4 Final","India":"TREM IV","Brasile":"MAR-I","Argentina":"MAR-I",
+  "Cina":"China IV","Giappone":"Stage V / Tier 4","Corea del Sud":"Tier 4","Turchia":"Stage V / IIIA export",
+  "Bielorussia":"Stage IIIA–V (per mercato)","Russia":"Tier 3–4 (per mercato)","Messico":"Tier 3–4 (per mercato)" };
+const SEG_ORDER = ["Compatto","Utility","Specializzato","Medio","Alta potenza","Grandi potenze","Convenzionale","Ibrida","Rotore"];
+const MAXHP = 850;
+
+const data = RAW.map((r,i) => {
+  const ms = MODELS[r[1]+"|"+r[4]];
+  const models = ms ? ms.map(([n,hp]) => ({n, hp})).sort((x,y) => x.hp-y.hp) : null;
+  return { id:i, gruppo:r[0], marchio:r[1], tipo:r[2], seg:r[3], fam:r[4], mod:r[5],
+    a: models ? models[0].hp : r[6], b: models ? models[models.length-1].hp : r[7],
+    models, paese:r[8], stab:r[9], nota:r[10], emi: EMISSION[r[8]] || "Stage V" };
+});
+const norm = s => String(s).normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/ł/g,"l").toLowerCase();
+data.forEach(d => d.txt = norm([GROUP_NAME[d.gruppo],d.marchio,d.tipo,d.seg,d.fam,d.mod,d.paese,d.stab,d.emi,...(d.models||[]).map(m=>m.n)].join(" ")));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const kw = hp => Math.round(hp*0.7355);
+const uniq = arr => [...new Set(arr)];
+
+/* =========================================================
+   STATO (salvato sul dispositivo)
+   ========================================================= */
+const DEF = { q:"", tipo:"", gruppo:"", marchio:"", seg:"", paese:"", hpMin:0, hpMax:MAXHP, inclFam:false, sort:"brand", view:"models", cmp:[], theme:"auto" };
+const HP_PRESETS = [
+  { l:"< 80", min:0, max:80 }, { l:"80–100", min:80, max:100 }, { l:"100–150", min:100, max:150 },
+  { l:"150–250", min:150, max:250 }, { l:"250–400", min:250, max:400 }, { l:"> 400", min:400, max:MAXHP }
+];
+let S = { ...DEF };
+try { S = { ...DEF, ...JSON.parse(localStorage.getItem("agridb.v3") || "{}") }; } catch(e) {}
+const save = () => { try { localStorage.setItem("agridb.v3", JSON.stringify(S)); } catch(e) {} };
+const $ = id => document.getElementById(id);
+
+/* =========================================================
+   TEMA
+   ========================================================= */
+const mq = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
+function applyTheme(){
+  const dark = S.theme === "dark" || (S.theme === "auto" && mq && mq.matches);
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+  document.querySelector('meta[name="theme-color"]').content = dark ? "#000000" : "#f2f2f7";
+  $("themeBtn").textContent = S.theme === "auto" ? "🌓" : (S.theme === "dark" ? "🌙" : "☀️");
+  $("themeBtn").setAttribute("aria-label", "Tema: " + ({auto:"automatico",dark:"scuro",light:"chiaro"})[S.theme]);
+}
+$("themeBtn").onclick = () => { S.theme = {auto:"light",light:"dark",dark:"auto"}[S.theme]; applyTheme(); save(); };
+if (mq && mq.addEventListener) mq.addEventListener("change", applyTheme);
+
+/* =========================================================
+   FILTRI
+   ========================================================= */
+/* Potenza: si confrontano i singoli modelli. Le famiglie senza elenco modelli usano la fascia complessiva. */
+const sliderOn = () => S.hpMin > 0 || S.hpMax < MAXHP;
+function hpOk(hp, skipSlider){
+  if (PQ.hp) {
+    if (PQ.hp.kind === "single") { if (Math.abs(hp - PQ.hp.n) > 10) return false; }
+    else if (hp < PQ.hp.min || hp > PQ.hp.max) return false;
+  }
+  if (!skipSlider && sliderOn() && (hp < S.hpMin || (S.hpMax < MAXHP && hp > S.hpMax))) return false;
+  return true;
+}
+function famOk(d, skipSlider){ // famiglie senza modelli: basta che la fascia si sovrapponga
+  const lo = [], hi = [];
+  if (PQ.hp) { if (PQ.hp.kind === "single") { lo.push(PQ.hp.n-10); hi.push(PQ.hp.n+10); } else { lo.push(PQ.hp.min); hi.push(PQ.hp.max); } }
+  if (!skipSlider && sliderOn()) { lo.push(S.hpMin); hi.push(S.hpMax < MAXHP ? S.hpMax : 9999); }
+  return d.b >= Math.max(0,...lo) && d.a <= Math.min(9999,...hi);
+}
+const hpActive = () => !!PQ.hp || sliderOn();
+const modelsIn = (d, skipSlider) => d.models ? d.models.filter(m => hpOk(m.hp, skipSlider)) : null;
+function hpMatch(d, skipSlider){
+  if (!PQ.hp && (skipSlider || !sliderOn())) return true;
+  return d.models ? modelsIn(d, skipSlider).length > 0 : (S.inclFam && famOk(d, skipSlider));
+}
+/* per i pulsanti rapidi: prova una fascia ignorando il cursore */
+function hpMatchPreset(d, p){
+  const max = p.max >= MAXHP ? 9999 : p.max;
+  const ok = hp => hp >= p.min && hp <= max && hpOk(hp, true);
+  return d.models ? d.models.some(m => ok(m.hp)) : (S.inclFam && d.b >= p.min && d.a <= max && famOk(d, true));
+}
+
+/* Legge la ricerca: "80-100", "80 – 100 hp", "80 a 100 cv", ">200", "<100", "150", più eventuali parole */
+function parseQuery(raw){
+  let q = norm(raw.trim()), hp = null, m;
+  const unit = "\\s*(?:hp|cv|ch|ps)?";
+  if ((m = q.match(new RegExp("(\\d{2,3})" + unit + "\\s*(?:-|–|—|a|÷|/)\\s*(\\d{2,3})" + unit)))) {
+    const x = +m[1], y = +m[2]; hp = { min:Math.min(x,y), max:Math.max(x,y), kind:"range" }; q = q.replace(m[0], " ");
+  } else if ((m = q.match(new RegExp("(>=?|<=?|oltre|sopra|sotto|fino a)\\s*(\\d{2,3})" + unit)))) {
+    const n = +m[2], up = /^(>|oltre|sopra)/.test(m[1]);
+    hp = up ? { min:n, max:9999, kind:"range" } : { min:0, max:n, kind:"range" }; q = q.replace(m[0], " ");
+  } else if ((m = q.match(new RegExp("(?:^|\\s)(\\d{2,3})" + unit + "(?=\\s|$)")))) {
+    hp = { n:+m[1], kind:"single" }; q = q.replace(m[0], " ");
+  }
+  return { hp, words: q.split(/\s+/).filter(Boolean) };
+}
+let PQ = { hp:null, words:[] };
+
+function matches(d, skip){
+  if (!hpMatch(d, skip === "hp")) return false;
+  if (PQ.words.length && !PQ.words.every(w => d.txt.includes(w))) return false;
+  if (skip !== "tipo" && S.tipo && d.tipo !== S.tipo) return false;
+  if (skip !== "gruppo" && S.gruppo && d.gruppo !== S.gruppo) return false;
+  if (skip !== "marchio" && S.marchio && d.marchio !== S.marchio) return false;
+  if (skip !== "seg" && S.seg && d.seg !== S.seg) return false;
+  if (skip !== "paese" && S.paese && d.paese !== S.paese) return false;
+  return true;
+}
+const filtered = () => data.filter(d => matches(d));
+
+function chipRow(el, items, cur, key, allLabel){
+  el.innerHTML = `<button class="chip ${cur===""?"on":""}" data-v="">${allLabel}</button>` +
+    items.map(it => `<button class="chip ${cur===it.v?"on":""}" data-v="${esc(it.v)}">${it.dot?`<span class="dot" style="background:${it.dot}"></span>`:""}${esc(it.l)} <span style="opacity:.6">${it.n}</span></button>`).join("");
+  el.onclick = e => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    S[key] = b.dataset.v;
+    if (key === "gruppo") { const ok = data.some(d => d.gruppo === S.gruppo && d.marchio === S.marchio); if (!ok) S.marchio = ""; }
+    render();
+  };
+}
+
+function fillSelect(el, values, cur, allLabel, labeler){
+  el.innerHTML = `<option value="">${allLabel}</option>` + values.map(v => `<option value="${esc(v.v)}" ${v.v===cur?"selected":""}>${esc(labeler?labeler(v.v):v.v)} (${v.n})</option>`).join("");
+  if (!values.some(v => v.v === cur)) el.value = "";
+}
+const countBy = (arr, key) => { const m = {}; arr.forEach(d => m[d[key]] = (m[d[key]]||0)+1); return m; };
+
+function renderControls(){
+  // Tipo
+  const forTipo = data.filter(d => matches(d,"tipo")), ct = countBy(forTipo,"tipo");
+  chipRow($("typeChips"), ["Trattore","Mietitrebbia"].map(t => ({v:t, l:t==="Trattore"?"🚜 Trattori":"🌾 Mietitrebbie", n:ct[t]||0})), S.tipo, "tipo", "Tutti");
+  // Gruppo
+  const forG = data.filter(d => matches(d,"gruppo")), cg = countBy(forG,"gruppo");
+  const groups = uniq(data.map(d => d.gruppo)).filter(g => cg[g] || g === S.gruppo);
+  chipRow($("groupChips"), groups.map(g => ({v:g, l:GROUP_NAME[g], n:cg[g]||0})), S.gruppo, "gruppo", "Tutti i gruppi");
+  // Select nel foglio filtri (collegati tra loro)
+  const mk = key => { const src = data.filter(d => matches(d,key)), c = countBy(src,key); return Object.keys(c).map(v => ({v, n:c[v]})); };
+  fillSelect($("fBrand"), mk("marchio").sort((x,y)=>x.v.localeCompare(y.v)), S.marchio, "Tutti i marchi");
+  fillSelect($("fSeg"), mk("seg").sort((x,y)=>SEG_ORDER.indexOf(x.v)-SEG_ORDER.indexOf(y.v)), S.seg, "Tutti i segmenti");
+  fillSelect($("fCountry"), mk("paese").sort((x,y)=>x.v.localeCompare(y.v)), S.paese, "Tutti i paesi", v => (FLAG[v]||"")+" "+v);
+  $("hpMin").value = S.hpMin; $("hpMax").value = S.hpMax;
+  $("hpMinV").textContent = S.hpMin + " CV"; $("hpMaxV").textContent = (S.hpMax >= MAXHP ? "850+ " : S.hpMax + " ") + "CV";
+  // Pulsanti rapidi potenza
+  const forHp = data.filter(d => matches(d,"hp"));
+  const curP = HP_PRESETS.findIndex(p => p.min === S.hpMin && p.max === S.hpMax);
+  const custom = curP < 0 && (S.hpMin > 0 || S.hpMax < MAXHP);
+  $("hpChips").innerHTML = `<button class="chip ${curP<0&&!custom?"on":""}" data-p="all">⚡ Tutte le potenze</button>` +
+    (custom ? `<button class="chip on" data-p="all">${S.hpMin}–${S.hpMax>=MAXHP?"850+":S.hpMax} CV ✕</button>` : "") +
+    HP_PRESETS.map((p,i) => { const n = forHp.filter(d => hpMatchPreset(d, p)).length;
+      return `<button class="chip ${i===curP?"on":""}" data-p="${i}">${p.l} CV <span style="opacity:.6">${n}</span></button>`; }).join("");
+  // Badge filtri attivi
+  const n = ["marchio","seg","paese"].filter(k => S[k]).length + ((S.hpMin>0||S.hpMax<MAXHP)?1:0);
+  $("fBadge").textContent = n; $("fBadge").style.display = n ? "grid" : "none";
+  $("q").value = S.q; $("qClear").style.display = S.q ? "block" : "none";
+  $("sort").value = S.sort;
+}
+
+/* =========================================================
+   LISTA MODELLI
+   ========================================================= */
+function card(d){
+  const c = BRAND_COLOR[d.marchio] || "#888", on = S.cmp.includes(d.id);
+  const pos = v => Math.min(v, MAXHP)/MAXHP*100;
+  const act = hpActive(), hits = act ? modelsIn(d) : null;
+  const shown = d.models ? (hits || d.models) : null;
+  const lo = shown && shown.length ? shown[0].hp : d.a, hi = shown && shown.length ? shown[shown.length-1].hp : d.b;
+  // finestra del range cercato sulla barra
+  let win = "";
+  if (act) {
+    let wmin = 0, wmax = MAXHP;
+    if (PQ.hp) { if (PQ.hp.kind === "single") { wmin = PQ.hp.n-10; wmax = PQ.hp.n+10; } else { wmin = PQ.hp.min; wmax = Math.min(PQ.hp.max, MAXHP); } }
+    if (sliderOn()) { wmin = Math.max(wmin, S.hpMin); wmax = Math.min(wmax, S.hpMax); }
+    win = `<div class="hp-win" style="left:${pos(wmin)}%;width:${Math.max(pos(wmax)-pos(wmin),0.8)}%"></div>`;
+  }
+  const dots = d.models ? d.models.map(m => `<div class="hp-dot ${hits && hits.includes(m) ? "hit" : ""}" style="left:${pos(m.hp)}%" title="${esc(m.n)}"></div>`).join("")
+                        : `<div class="hp-fill" style="left:${pos(d.a)}%;width:${Math.max(pos(d.b)-pos(d.a),1)}%"></div>`;
+  let mlist = "";
+  if (d.models) {
+    const extra = d.models.length - shown.length;
+    mlist = `<div class="models">${shown.map(m => `<span class="mchip ${act?"hit":""}">${esc(m.n)} · <b>${m.hp}</b> CV</span>`).join("")}${extra>0?`<span class="mmore">+${extra} altri modelli fuori range</span>`:""}</div>`;
+  } else {
+    mlist = `<div class="note" style="margin:0 0 10px">Potenze dei singoli modelli non disponibili: indicata la fascia della gamma.</div>`;
+  }
+  return `<article class="card" style="--bc:${c};--bc2:${c}">
+    <div class="card-top">
+      <div style="min-width:0">
+        <div class="brand">${esc(d.marchio)} <small>· ${esc(GROUP_NAME[d.gruppo])}</small></div>
+        <div class="fam">${esc(d.fam)}</div>
+        <div class="mod">${esc(d.mod)}</div>
+      </div>
+      <button class="cmp ${on?"on":""}" data-cmp="${d.id}" aria-pressed="${on}">${on?"✓ Confronto":"+ Confronta"}</button>
+    </div>
+    <div class="hp">
+      <div class="hp-l"><b>${lo === hi ? lo : lo + " – " + hi} CV</b><span>${lo === hi ? kw(lo) : kw(lo) + " – " + kw(hi)} kW${act && d.models ? " · nel range" : ""}</span></div>
+      <div class="hp-track">${win}${dots}</div>
+    </div>
+    ${mlist}
+    <div class="meta">
+      <div><span class="k">Stabilimento</span>🏭 ${esc(d.stab)}</div>
+      <div><span class="k">Paese</span>${FLAG[d.paese]||"🌍"} ${esc(d.paese)}</div>
+      <div><span class="k">Tipo</span><span class="pill">${esc(d.tipo)}</span><span class="pill">${esc(d.seg)}</span></div>
+      <div><span class="k">Emissioni</span>🌱 ${esc(d.emi)}</div>
+    </div>
+    ${d.nota?`<div class="note">ℹ️ ${esc(d.nota)}</div>`:""}
+  </article>`;
+}
+
+const shownHp = d => { const m = hpActive() ? modelsIn(d) : d.models; return m && m.length ? m.map(x => x.hp) : [d.a, d.b]; };
+const lowHp = d => Math.min(...shownHp(d)), highHp = d => Math.max(...shownHp(d));
+function renderList(){
+  let arr = filtered();
+  const cmpFn = {
+    brand:(x,y)=> x.marchio.localeCompare(y.marchio) || x.tipo.localeCompare(y.tipo) || x.a-y.a,
+    hpAsc:(x,y)=> lowHp(x)-lowHp(y) || highHp(x)-highHp(y),
+    hpDesc:(x,y)=> highHp(y)-highHp(x) || lowHp(y)-lowHp(x),
+    country:(x,y)=> x.paese.localeCompare(y.paese) || x.stab.localeCompare(y.stab) || x.marchio.localeCompare(y.marchio)
+  }[S.sort];
+  arr.sort(cmpFn);
+  const nm = arr.reduce((t,d) => t + (d.models ? (hpActive() ? modelsIn(d).length : d.models.length) : 0), 0);
+  let hiddenFam = 0;
+  if (hpActive() && !S.inclFam) { S.inclFam = true; hiddenFam = data.filter(d => !d.models && matches(d)).length; S.inclFam = false; }
+  $("famNote").innerHTML = hpActive() ? (S.inclFam
+    ? `Incluse anche le gamme senza dettaglio modelli (confronto sulla fascia). <a href="#" id="famTog">Nascondile</a>`
+    : (hiddenFam ? `${hiddenFam} gamme senza dettaglio dei modelli non sono mostrate. <a href="#" id="famTog">Mostrale</a>` : "")) : "";
+  if ($("famTog")) $("famTog").onclick = e => { e.preventDefault(); S.inclFam = !S.inclFam; render(); };
+  $("count").textContent = (arr.length === data.length ? `${arr.length} gamme` : `${arr.length} di ${data.length} gamme`) + ` · ${nm} modelli`;
+  if (!arr.length) { $("list").innerHTML = `<div class="empty">Nessun risultato con questi filtri.<br><button class="btn sec" id="emptyReset">Azzera filtri</button></div>`; $("emptyReset").onclick = resetAll; return; }
+  const groupKey = S.sort === "brand" ? (d => d.marchio) : S.sort === "country" ? (d => d.paese) : null;
+  if (!groupKey) { $("list").innerHTML = `<div class="cards2">${arr.map(card).join("")}</div>`; return; }
+  let html = "", cur = null, buf = [];
+  const flush = () => { if (buf.length) html += `<div class="cards2">${buf.join("")}</div>`; buf = []; };
+  arr.forEach(d => {
+    const k = groupKey(d);
+    if (k !== cur) {
+      flush(); cur = k;
+      const n = arr.filter(x => groupKey(x) === k).length;
+      const dot = S.sort === "brand" ? `<span class="dot" style="background:${BRAND_COLOR[k]||"#888"}"></span>` : (FLAG[k]||"");
+      html += `<div class="group-h">${dot}${esc(k)} · ${n}</div>`;
     }
+    buf.push(card(d));
+  });
+  flush();
+  $("list").innerHTML = html;
+}
 
-    function htmlDettaglio(item, id) {
-        const m = modelli[item.famiglia];
-        if (!m) return "";
-        let corpo;
-        if (m.righe.length === 0) {
-            corpo = `<div class="small text-muted">Dati dei modelli non ancora disponibili.</div>`;
-        } else {
-            corpo = `<table class="table table-sm small mb-1"><thead><tr><th>Modello</th><th class="text-end">HP max</th></tr></thead><tbody>` +
-                m.righe.map(r => `<tr><td>${r[0]}</td><td class="text-end">${r[1]}</td></tr>`).join("") +
-                `</tbody></table>`;
-        }
-        if (m.verifica) corpo += `<div class="small text-warning-emphasis">⚠️ Dati da verificare</div>`;
-        return `<div id="det-${id}" class="d-none mt-2 pt-2 border-top">${corpo}</div>
-                <div class="small text-primary mt-2">▾ Tocca per vedere i modelli</div>`;
-    }
+/* =========================================================
+   VISTA STABILIMENTI
+   ========================================================= */
+function renderPlants(){
+  const arr = filtered(), m = {};
+  arr.forEach(d => { const k = d.paese+"|"+d.stab; (m[k] = m[k] || {paese:d.paese, stab:d.stab, items:[]}).items.push(d); });
+  const list = Object.values(m).sort((x,y)=> x.paese.localeCompare(y.paese) || y.items.length-x.items.length);
+  $("pcount").textContent = `${list.length} stabilimenti`;
+  let html = "", cur = null;
+  list.forEach(p => {
+    if (p.paese !== cur) { cur = p.paese; html += `<div class="group-h">${FLAG[cur]||""} ${esc(cur)}</div>`; }
+    const byBrand = {}; p.items.forEach(d => (byBrand[d.marchio] = byBrand[d.marchio] || []).push(d.fam));
+    const hp = `${Math.min(...p.items.map(d=>d.a))}–${Math.max(...p.items.map(d=>d.b))} CV`;
+    html += `<button class="plant" data-plant="${esc(p.stab)}">
+      <div class="plant-t">🏭 ${esc(p.stab)}<span>${p.items.length} gamme · ${hp}</span></div>
+      <div class="plant-b">${Object.entries(byBrand).map(([b,f]) => `<i style="color:${BRAND_COLOR[b]||"inherit"}">${esc(b)}</i>: ${f.map(esc).join(", ")}`).join("<br>")}</div>
+    </button>`;
+  });
+  $("plants").innerHTML = html || `<div class="empty">Nessuno stabilimento con questi filtri.</div>`;
+}
+$("plants").onclick = e => {
+  const b = e.target.closest(".plant"); if (!b) return;
+  S.q = b.dataset.plant.split(/[,(]/)[0].trim(); S.view = "models"; render(); window.scrollTo({top:0,behavior:"smooth"});
+};
 
-    function populateSelects() {
-        const brands = [...new Set(data.map(item => item.brand))].sort();
-        const tipos = [...new Set(data.map(item => item.tipo))].sort();
-        const paesi = [...new Set(data.map(item => item.paese))].sort();
-        const famiglie = [...new Set(data.map(item => item.famiglia))].sort();
+/* =========================================================
+   CONFRONTO (fino a 3)
+   ========================================================= */
+function renderCmpBar(){
+  const n = S.cmp.length;
+  $("cbar").classList.toggle("show", n > 0);
+  $("cbarTxt").textContent = n === 1 ? "1 gamma selezionata · aggiungine un'altra" : `${n} gamme selezionate` + (n>=3 ? " (max 3)" : "");
+  $("cOpen").disabled = n < 2;
+}
+$("list").onclick = e => {
+  const b = e.target.closest("[data-cmp]"); if (!b) return;
+  const id = +b.dataset.cmp, i = S.cmp.indexOf(id);
+  if (i >= 0) S.cmp.splice(i,1);
+  else { if (S.cmp.length >= 3) S.cmp.shift(); S.cmp.push(id); }
+  if (navigator.vibrate) navigator.vibrate(8);
+  render();
+};
+function renderCmpTable(){
+  const items = S.cmp.map(id => data[id]).filter(Boolean);
+  const maxB = Math.max(...items.map(d=>d.b)), minA = Math.min(...items.map(d=>d.a));
+  const row = (label, f) => `<tr><th>${label}</th>${items.map(d => `<td>${f(d)}</td>`).join("")}</tr>`;
+  $("cmpBody").innerHTML = `<table class="ctable">
+    <tr><th></th>${items.map(d => `<td><span class="brand" style="color:${BRAND_COLOR[d.marchio]}">${esc(d.marchio)}</span><br><b>${esc(d.fam)}</b><br><button class="rm" data-rm="${d.id}">Rimuovi</button></td>`).join("")}</tr>
+    ${row("Modelli", d => esc(d.mod))}
+    ${row("Gruppo", d => esc(GROUP_NAME[d.gruppo]))}
+    ${row("Tipo", d => esc(d.tipo)+"<br>"+esc(d.seg))}
+    ${row("CV min", d => `<span class="${d.a===minA?"best":""}">${d.a}</span>`)}
+    ${row("CV max", d => `<span class="${d.b===maxB?"best":""}">${d.b}</span>`)}
+    ${row("kW", d => `${kw(d.a)} – ${kw(d.b)}`)}
+    ${row(hpActive() ? "Modelli nel range" : "Modelli", d => d.models ? (hpActive() ? modelsIn(d) : d.models).map(m => `${esc(m.n)} <b>${m.hp}</b>`).join("<br>") || "—" : "n.d.")}
+    ${row("Stabilimento", d => esc(d.stab))}
+    ${row("Paese", d => (FLAG[d.paese]||"")+" "+esc(d.paese))}
+    ${row("Emissioni", d => esc(d.emi))}
+  </table>`;
+}
+$("cmpBody").onclick = e => {
+  const b = e.target.closest("[data-rm]"); if (!b) return;
+  S.cmp = S.cmp.filter(x => x !== +b.dataset.rm);
+  if (S.cmp.length < 2) closeSheets(); else renderCmpTable();
+  render();
+};
+$("cOpen").onclick = () => { renderCmpTable(); openSheet("cmpSheet"); };
+$("cClear").onclick = () => { S.cmp = []; render(); };
+$("cDone").onclick = closeSheets;
 
-        const brandSelect = document.getElementById("filterBrand");
-        brands.forEach(b => brandSelect.innerHTML += `<option value="${b}">${b}</option>`);
+/* =========================================================
+   FOGLI (bottom sheet)
+   ========================================================= */
+function openSheet(id){ $(id).classList.add("show"); $(id).setAttribute("aria-hidden","false"); $("overlay").classList.add("show"); document.body.style.overflow="hidden"; }
+function closeSheets(){ document.querySelectorAll(".sheet").forEach(s => { s.classList.remove("show"); s.setAttribute("aria-hidden","true"); }); $("overlay").classList.remove("show"); document.body.style.overflow=""; }
+$("overlay").onclick = closeSheets;
+$("filterBtn").onclick = () => openSheet("filterSheet");
+$("fDone").onclick = $("fApply").onclick = closeSheets;
+document.querySelectorAll(".sheet").forEach(sh => { // trascina giù per chiudere
+  let y0 = null;
+  sh.addEventListener("touchstart", e => { if (sh.querySelector(".sheet-b").scrollTop <= 0) y0 = e.touches[0].clientY; }, {passive:true});
+  sh.addEventListener("touchmove", e => { if (y0 === null) return; const dy = e.touches[0].clientY - y0; if (dy > 0) sh.style.transform = `translateY(${dy}px)`; }, {passive:true});
+  sh.addEventListener("touchend", e => { if (y0 === null) return; const dy = e.changedTouches[0].clientY - y0; sh.style.transform = ""; y0 = null; if (dy > 90) closeSheets(); });
+});
 
-        const tipoSelect = document.getElementById("filterTipo");
-        tipos.forEach(t => tipoSelect.innerHTML += `<option value="${t}">${t}</option>`);
+$("fBrand").onchange = e => { S.marchio = e.target.value; if (S.marchio) S.gruppo = data.find(d => d.marchio === S.marchio).gruppo; render(); };
+$("fSeg").onchange = e => { S.seg = e.target.value; render(); };
+$("fCountry").onchange = e => { S.paese = e.target.value; render(); };
+$("hpMin").oninput = e => { S.hpMin = Math.min(+e.target.value, S.hpMax); render(); };
+$("hpMax").oninput = e => { S.hpMax = Math.max(+e.target.value, S.hpMin); render(); };
+$("hpChips").onclick = e => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  const p = HP_PRESETS[+b.dataset.p];
+  if (!p || (S.hpMin === p.min && S.hpMax === p.max)) { S.hpMin = 0; S.hpMax = MAXHP; } else { S.hpMin = p.min; S.hpMax = p.max; }
+  render();
+};
+function resetAll(){ Object.assign(S, { q:"", tipo:"", gruppo:"", marchio:"", seg:"", paese:"", hpMin:0, hpMax:MAXHP }); render(); }
+$("fReset").onclick = resetAll;
 
-        const paeseSelect = document.getElementById("filterPaese");
-        paesi.forEach(p => paeseSelect.innerHTML += `<option value="${p}">${p}</option>`);
+/* Ricerca */
+let t;
+$("q").oninput = e => { clearTimeout(t); t = setTimeout(() => { S.q = e.target.value; render(); }, 120); $("qClear").style.display = e.target.value ? "block" : "none"; };
+$("q").addEventListener("keydown", e => { if (e.key === "Enter") e.target.blur(); });
+$("qClear").onclick = () => { S.q = ""; render(); $("q").focus(); };
+$("sort").onchange = e => { S.sort = e.target.value; render(); };
 
-        const famigliaSelect = document.getElementById("filterFamiglia");
-        famiglie.forEach(f => famigliaSelect.innerHTML += `<option value="${f}">${f}</option>`);
-    }
+/* Tab */
+$("tabModels").onclick = () => { S.view = "models"; render(); };
+$("tabPlants").onclick = () => { S.view = "plants"; render(); };
 
-    function renderCards(filteredData) {
-        const container = document.getElementById("cardContainer");
-        container.innerHTML = "";
+/* Bordo della barra quando si scorre */
+window.addEventListener("scroll", () => $("toolbar").classList.toggle("scrolled", window.scrollY > 150), {passive:true});
 
-        if (filteredData.length === 0) {
-            container.innerHTML = `<div class="text-center text-muted py-4">Nessun risultato trovato</div>`;
-            document.getElementById("resultCount").innerText = `0 elementi trovati`;
-            return;
-        }
+/* =========================================================
+   RENDER
+   ========================================================= */
+function render(){
+  PQ = parseQuery(S.q || "");
+  renderControls();
+  $("tabModels").classList.toggle("on", S.view === "models");
+  $("tabPlants").classList.toggle("on", S.view === "plants");
+  $("viewModels").classList.toggle("hidden", S.view !== "models");
+  $("viewPlants").classList.toggle("hidden", S.view !== "plants");
+  if (S.view === "models") renderList(); else renderPlants();
+  renderCmpBar();
+  save();
+}
 
-        filteredData.forEach(item => {
-            let brandClass = "";
-            if (item.brand === "Claas") brandClass = "claas";
-            else if (item.brand === "CNH Industrial") brandClass = "cnh";
-            else if (item.brand === "John Deere") brandClass = "johndeere";
+$("stModels").textContent = data.length;
+$("stBrands").textContent = uniq(data.map(d => d.marchio)).length;
+$("stPlants").textContent = uniq(data.map(d => d.paese+"|"+d.stab)).length;
+S.cmp = S.cmp.filter(id => data[id]);
+applyTheme();
+render();
 
-            const id = data.indexOf(item);
-            const haDettaglio = !!modelli[item.famiglia];
-            container.innerHTML += `
-                <div class="machine-card ${brandClass}" ${haDettaglio ? `onclick="toggleDettaglio(${id})" style="cursor:pointer;"` : ""}>
-                    <div class="d-flex justify-content-between align-items-start mb-1">
-                        <h6 class="fw-bold mb-0 text-dark">${item.brand}</h6>
-                        <span class="badge bg-light text-dark border badge-tipo">${item.tipo}</span>
-                    </div>
-                    <div class="fw-bold text-primary mb-1" style="font-size: 1rem;">🌾 Famiglia: ${item.famiglia}</div>
-                    <div class="small text-muted mb-2">Modello: ${item.modello}</div>
-                    <div class="row small text-secondary g-1 border-top pt-2">
-                        <div class="col-6">⚡ <strong>Potenza:</strong> ${item.hp}</div>
-                        <div class="col-6">🌍 <strong>Paese:</strong> ${item.paese}</div>
-                        <div class="col-6">🏭 <strong>Stabilimento:</strong> ${item.stabilimento}</div>
-                        <div class="col-6">🌱 <strong>Emissioni:</strong> ${item.emissioni}</div>
-                    </div>
-                    ${haDettaglio ? htmlDettaglio(item, id) : ""}
-                </div>
-            `;
-        });
+/* Icona per "Aggiungi a schermata Home" su iPhone */
+try {
+  const c = document.createElement("canvas"); c.width = c.height = 180;
+  const x = c.getContext("2d");
+  const g = x.createLinearGradient(0,0,180,180); g.addColorStop(0,"#2f8f5b"); g.addColorStop(1,"#1a4d31");
+  x.fillStyle = g; x.fillRect(0,0,180,180);
+  x.font = "110px -apple-system, 'Apple Color Emoji', sans-serif"; x.textAlign = "center"; x.textBaseline = "middle";
+  x.fillText("🚜", 90, 98);
+  $("touchIcon").href = c.toDataURL("image/png");
+} catch(e) {}
 
-        document.getElementById("resultCount").innerText = `Mostrati ${filteredData.length} di ${data.length} elementi`;
-    }
-
-    function filterTable() {
-        const globalVal = document.getElementById("globalSearch").value.toLowerCase();
-        const brandVal = document.getElementById("filterBrand").value;
-        const tipoVal = document.getElementById("filterTipo").value;
-        const paeseVal = document.getElementById("filterPaese").value;
-        const famigliaVal = document.getElementById("filterFamiglia").value;
-
-        const filtered = data.filter(item => {
-            const fullText = `${item.brand} ${item.tipo} ${item.famiglia} ${item.modello} ${item.hp} ${item.emissioni} ${item.paese} ${item.stabilimento}`.toLowerCase();
-            
-            const matchGlobal = globalVal === "" || fullText.includes(globalVal);
-            const matchBrand = brandVal === "" || item.brand === brandVal;
-            const matchTipo = tipoVal === "" || item.tipo === tipoVal;
-            const matchPaese = paeseVal === "" || item.paese === paeseVal;
-            const matchFamiglia = famigliaVal === "" || item.famiglia === famigliaVal;
-
-            return matchGlobal && matchBrand && matchTipo && matchPaese && matchFamiglia;
-        });
-
-        renderCards(filtered);
-    }
-
-    function resetFilters() {
-        document.getElementById("globalSearch").value = "";
-        document.getElementById("filterBrand").value = "";
-        document.getElementById("filterTipo").value = "";
-        document.getElementById("filterPaese").value = "";
-        document.getElementById("filterFamiglia").value = "";
-        renderCards(data);
-    }
-
-    populateSelects();
-    renderCards(data);
+/* Funzionamento offline (serve il file sw.js nella stessa cartella) */
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
 </script>
-
 </body>
 </html>

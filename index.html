@@ -106,6 +106,10 @@
   .hp-dot { position:absolute; top:-3px; width:12px; height:12px; margin-left:-6px; border-radius:50%; background:var(--card); border:2.5px solid var(--bc,#888); }
   .hp-dot.hit { background:var(--accent); border-color:var(--accent); z-index:1; }
   .hp-win { position:absolute; top:-5px; bottom:-5px; border-radius:4px; background:var(--accent-soft); box-shadow:inset 0 0 0 1px var(--accent); }
+  .actions { display:flex; gap:8px; margin-top:10px; }
+  .broch { display:inline-flex; align-items:center; gap:6px; text-decoration:none; font-size:14px; font-weight:600; color:var(--accent);
+    background:var(--accent-soft); border-radius:10px; padding:8px 12px; }
+  .broch.search { color:var(--muted); background:var(--card2); }
   .empty { text-align:center; color:var(--muted); padding:48px 0; }
   .empty button { margin-top:12px; }
 
@@ -298,6 +302,7 @@ const RAW = [
   ["CNH","New Holland","Mietitrebbia","Rotore","CR Revelation","CR7.80 – CR9.90",390,680,"Belgio","Zedelgem",""],
   ["CNH","New Holland","Mietitrebbia","Rotore","CR10 / CR11","CR10.90 – CR11",634,775,"Belgio","Zedelgem",""],
   ["CNH","New Holland","Mietitrebbia","Rotore","CR (Sud America)","CR per Brasile e Argentina",250,600,"Brasile","Sorocaba",""],
+  ["CNH","New Holland","Mietitrebbia","Convenzionale","TC5.30 (India)","TC5.30 multi-coltura (grano, riso, mais, soia)",130,138,"India","Pune","130 CV nominali, 138 CV massimi; taglio 4,6 m"],
   ["CNH","New Holland","Mietitrebbia","Convenzionale","TC (Sud America)","TC per il mercato brasiliano",175,260,"Brasile","Curitiba",""],
   // ---- CNH: Case IH ----
   ["CNH","Case IH","Trattore","Specializzato","Farmall C / Quantum","Frutteto, vigneto, utility",55,117,"Italia","Jesi",""],
@@ -435,6 +440,7 @@ const MODELS = {
   "New Holland|CX5 / CX6": [["CX5.80",258],["CX5.90",284],["CX6.80",306],["CX6.90",340]],
   "New Holland|CX7 / CX8": [["CX7.80",330],["CX7.90",367],["CX8.70",408],["CX8.80",449],["CX8.90",490]],
   "New Holland|CR Revelation": [["CR7.80",408],["CR7.90",449],["CR8.80",490],["CR8.90",571],["CR9.90",653]],
+  "New Holland|TC5.30 (India)": [["TC5.30",138]],
   "New Holland|CR10 / CR11": [["CR10.90",634],["CR11",775]],
 
   "Case IH|Farmall C / Quantum": [["Farmall 55C",55],["Farmall 65C",65],["Farmall 75C",75],["Quantum 90 F/N/V",86],["Farmall 90C",90],["Farmall 100C",99],["Farmall 110C",107],["Quantum 120 F",114],["Farmall 120C",117]],
@@ -534,6 +540,125 @@ const MODELS = {
   "World|Trattori FMWorld": [["454K",45],["704F",70],["1104B",110],["Cabinato 130",130]],
   "World|Ruilong Plus": [["Ruilong Plus 4LZ-6.0P",102]]
 };
+
+
+/* =========================================================
+   BROCHURE: link diretti (PDF, catalogo sfogliabile o pagina ufficiale).
+   Chiave "Marchio|Famiglia". Senza link: ricerca mirata.
+   ========================================================= */
+const BROCHURES = {
+ "New Holland|Boomer / Workmaster compatti": "https://www.newhollandrochester.com/wp-content/uploads/2016/09/New-Holland-Boomer-and-Workmaster-Series-Tractor-Literature.pdf",
+ "New Holland|T4 F / N / V / LP": "https://agricar.co.uk/wp-content/uploads/2024/02/t4-fnv-stage-v-brochure-uk-en.pdf",
+ "New Holland|T5 Utility / Dual Command / Auto Command": "https://agricar.co.uk/wp-content/uploads/2025/11/New-Holland-T5-Dual-Command-T5S-Ranger.pdf",
+ "New Holland|T4 / T4S / T3": "https://pdf.agriexpo.online/pdf/new-holland/t4s/169826-37436.html",
+ "New Holland|T6 (incl. Methane Power)": "https://www.terapro.ca/wp-content/uploads/2023/02/t6-stage-v-brochure-us-en.pdf",
+ "New Holland|T7 Standard / LWB": "https://www.ernestdoe.com/app/uploads/2023/03/t7-lwb-with-plm-intelligence-brochure-uk-en.pdf",
+ "New Holland|T7 Heavy Duty": "https://www.ernestdoe.com/app/uploads/2022/08/t7-heavy-duty-with-plm-intelligence-2022-brochure-uk-en.pdf",
+ "New Holland|T8 Genesis": "https://pdf.agriexpo.online/pdf/new-holland/t8-genesis-plm-intelligence/169826-30250.html",
+ "New Holland|T8 Genesis (Sud America)": "https://pdf.agriexpo.online/pdf/new-holland/t8-genesis-plm-intelligence/169826-30250.html",
+ "New Holland|T9 / T9 SmartTrax": "https://rockymtn.com/wp-content/uploads/2022/02/t9-with-plm-intelligence-brochure-us-en.pdf",
+ "New Holland|TC": "https://mgc-machinery.com/sites/default/files/tc-combines-brochure-.pdf",
+ "New Holland|CX7 / CX8": "https://pdf.agriexpo.online/pdf/new-holland/cx7-cx8/169826-30252.html",
+ "New Holland|CR Revelation": "https://www.lloyd.ltd.uk/wp-content/uploads/2024/04/cr-revelation-stage-v-brochure-uk-en.pdf",
+ "New Holland|CR10 / CR11": "https://pdf.agriexpo.online/pdf/new-holland/new-cr11/169826-52517.html",
+ "Case IH|Farmall C / Quantum": "https://www.ernestdoe.com/app/uploads/2024/10/caseih-quantum-full-series-brochure-fin-low-compressed.pdf",
+ "Case IH|Luxxum / Vestrum / Maxxum": "https://pdf.agriexpo.online/pdf/case-ih/maxxum/168666-27391.html",
+ "Case IH|Puma": "https://www.ernestdoe.com/app/uploads/2024/10/puma-afs-connect-broschure-32p-lowres-compressed.pdf",
+ "Case IH|Optum": "https://www.mikegarwoodltd.co.uk/files/uploaded/Optum-Brochure.pdf",
+ "Case IH|Magnum": "https://rockymtn.com/wp-content/uploads/2022/02/AFS_Connect_Magnum_Brochure_10-21_CIH21092301_pages.pdf",
+ "Case IH|Steiger / Quadtrac": "https://pdf.agriexpo.online/pdf/case-ih/steiger-quadtrac/168666-687.html",
+ "Case IH|Axial-Flow": "https://redmac.com.au/wp-content/uploads/2025/02/Case-IH-Axial-Flow-250-Series-Combines-Brochure.pdf",
+ "Case IH|Axial-Flow (Sud America)": "https://pdf.agriexpo.online/pdf/case-ih/axial-flow/168666-27381.html",
+ "Steyr|Multi / Expert / Profi": "https://www.meifort.de/files/850013/userupload/Steyr%20Profi%20CVT.pdf",
+ "Steyr|Absolut / Terrus CVT": "https://www.agroma.si/wp-content/uploads/2020/04/agroma-traktor-steyr-terrus-cvt.pdf",
+ "John Deere|5M": "https://www.deere.com.au/assets/pdfs/common/products/tractors/jd1422-5m-brochure.pdf",
+ "John Deere|5R": "https://assets.deerequipment.com/wp-content/uploads/2022/06/19190117/5r_tractors.pdf",
+ "John Deere|6M / 6R": "https://www.deere.com/assets/pdfs/common/products/tractors/jd1448-6r-brochure-2021.pdf",
+ "John Deere|7R": "https://www.deere.com/assets/pdfs/region-1/products/tractors/7R_Brochure.pdf",
+ "John Deere|8R / 8RT / 8RX": "https://www.deere.com/assets/pdfs/region-4/products/row-crop-tractors/4867854-8-series-tractor.pdf",
+ "John Deere|Serie W / T": "https://www.deere.com/assets/pdfs/region-4/products/harvesting/t-series/5673683-t-series.pdf",
+ "John Deere|Serie S7": "https://www.rdoequipment.com.au/wp-content/uploads/2025/07/John-Deere-S7-Combine-Harvesters-Brochure.pdf",
+ "John Deere|Serie X9": "https://www.deere.africa/assets/pdfs/region-1/brochures/x9-combine.pdf",
+ "John Deere|Serie media (Asia)": "https://www.deere.com/assets/pdfs/region-1/brochures/W430%20Asia%20brochure%20(update2023).pdf",
+ "John Deere|9R / 9RT / 9RX": "https://www.deere.com/assets/pdfs/region-4/products/4-wd-and-track-tractors/4843464-9rx-tractors.pdf",
+ "John Deere|Serie 1 – 4": "https://www.deere.com.au/assets/pdfs/common/products/compact-utility-tractors/jd1387-cuts-brochure-2019.pdf",
+ "John Deere|5D / 5E (India)": "https://www.deere.co.th/assets/pdfs/region-1/products/tractors/5d-series/5D-Series-Brochure-EN.pdf",
+ "John Deere|5E (Messico)": "https://assets.deerequipment.com/wp-content/uploads/2022/06/19185805/5e_tractors.pdf",
+ "Claas|Axion 800 / 900": "https://www.claasofamerica.com/blueprint/servlet/resource/blob/2730760/d469c8ec5e6863802f81fedd81cb9e38/cl99881041_axion-800_web-data.pdf",
+ "Claas|Arion 400 – 600": "https://claasharvestcentre.com/wp-content/uploads/2024/09/claas-arion-660-510-hrc-2023.pdf",
+ "Claas|Xerion 12": "https://claasharvestcentre.com/wp-content/uploads/2024/09/xerion-12-series-brochure.pdf",
+ "Claas|Lexion 5000 – 8000": "https://www.claasharvestcentre.com/media/1328837/claas-lexion-8000-7000-au-nz-brochure_2022_web.pdf",
+ "Claas|Lexion (Nord America)": "https://zieglercat.com/assets/files/claas-lexion-081519-singles-final-data.pdf",
+ "Claas|Trion 500 – 700": "https://issuu.com/claasuk/docs/trion_700_operators_brochure_2023_issuu",
+ "Claas|Elios / Nexos": "https://claasharvestcentre.com/wp-content/uploads/2024/09/BROCHURE-NEXOS-ENGLISH.pdf",
+ "Claas|Crop Tiger": "https://grainsco.com/wp-content/uploads/2023/08/CLAAS_CROP-TIGER-40.pdf",
+ "Fendt|700 / 900 Vario": "https://hanlonag.com/wp-content/uploads/2024/01/FT22B006AGv03-fendt-700-vario-series-brochure-lr.pdf",
+ "Fendt|200 Vario V / F / P": "https://hanlonag.com/wp-content/uploads/2024/03/FT24B001DSv02-200-Vario-VFP-Brochure-US-Updated-FINAL-lr.pdf",
+ "Fendt|300 / 500 / 600 Vario": "https://www.kcequipment.com.au/wp-content/uploads/Fendt-300-Vario-Brochure.pdf",
+ "Fendt|1000 Vario": "https://hanlonag.com/wp-content/uploads/2022/02/FT22B003AG-fendt-1000-vario-series-brochure-lr.pdf",
+ "Fendt|900 MT / 1100 MT (cingolati)": "https://allegianceag.farm/wp-content/uploads/2023/11/fendt-1100-vario-mt-brochure-v1.pdf",
+ "Fendt|IDEAL": "https://hanlonag.com/wp-content/uploads/2023/10/FT23B004AG-fendt-ideal-axial-combine-brochure-lr.pdf",
+ "Fendt|Serie C / L": "https://pdf.agriexpo.online/pdf/agco-gmbh/fendt-l-series/169019-2842.html",
+ "Massey Ferguson|MF 4700 M / 5700 M (Global Series)": "https://www.masseyferguson.com/content/dam/public/masseyfergusonglobal/markets/en/assets/product-brochures/tractors/mf-5700-m/A-A-17337_MF_5700_M_Bro_Eng_V12B_UB.pdf",
+ "Massey Ferguson|MF 5S / 6S / 7S": "https://www.masseyferguson.com/content/dam/public/masseyfergusonglobal/markets/en/assets/product-brochures/tractors/mf-7s/A-A-17317_MF_7S_Broch_Large_English_V12C_UB.pdf",
+ "Massey Ferguson|MF 8S": "https://www.masseyferguson.com/content/dam/public/masseyfergusonglobal/markets/en/assets/product-brochures/tractors/mf-8s/A-A-17256_MF_8S_Range_V28_UB.pdf",
+ "Massey Ferguson|MF 9S": "https://www.masseyferguson.com/content/dam/public/masseyfergusonglobal/markets/en/assets/product-brochures/tractors/mf-9s/A-A-17930_MF_9S_Broch_Eng_V3_2024_UB1.pdf",
+ "Massey Ferguson|MF Activa / Beta": "https://www.masseyferguson.com/content/dam/public/masseyfergusonglobal/markets/en/assets/product-brochures/combine-harvesters/mf-beta/A-A-17325_MF_BETA_Brochure_V15_UB.pdf",
+ "Valtra|Serie T / Q": "https://pdf.agriexpo.online/pdf/valtra/t-series-2021/170518-14107.html",
+ "Valtra|Serie A / G / N": "https://www.valtra.com/content/dam/Brands/Valtra/en/Products/Brochures/2021/Valtra-g-series-brochure-en-screen.pdf",
+ "Deutz-Fahr|Serie 5 / 5G / 5 TTV": "https://www.deutz-fahr.com/media/308.8901.3.4-0_Serie_5_Stage_V_EN_2.pdf",
+ "Deutz-Fahr|Serie 6 / 7 / 8 / 9": "https://deutz-fahramerica.com/wp-content/uploads/6series-brochure_full.pdf",
+ "Deutz-Fahr|C6000 / C7000 / C9000": "https://www.deutz-fahr.com/media/308.8308.3.6-2_C9000_EN_1TGGVBG.pdf",
+ "Same|Frutteto / Dorado / Explorer / Virtus": "https://issuu.com/same-tractors/docs/308.8526.3.1-4_frutteto_range_en",
+ "Lamborghini|Spire / Strike / Mach": "https://pdf.agriexpo.online/pdf/lamborghini/product-range-2023/175427-45450.html",
+ "Landini|Serie 5 / 6 / 7": "https://pdf.agriexpo.online/pdf/landini-168424.html",
+ "Landini|Serie 2 / Rex": "https://www.landini-tractors.com.au/Landini/brochures/Rex4.pdf",
+ "McCormick|X4 – X8": "https://mccormick-tractors.com/content/dam/mccormick/as/MC_RPF2_X8_CleverCab_Brochure_60p_6737480A1_WEB_EN.pdf.inline.pdf",
+ "Kubota|M7": "https://www.kubotausa.com/docs/default-source/brochure-sheets/m7-g4-brochure.pdf?sfvrsn=47999f69_4",
+ "Kubota|M4 / M5": "https://www.kubotausa.com/docs/default-source/brochure-sheets/m5-series.pdf?sfvrsn=51eeeb2f_4",
+ "Kubota|Serie B / L": "https://www.kubotausa.com/docs/default-source/brochure-sheets/2025-full-product-line-brochure.pdf?sfvrsn=efd39503_5",
+ "Kubota|M8": "https://www.kubotausa.com/docs/default-source/brochure-sheets/m8-brochureupdate.pdf?sfvrsn=1c788cad_3",
+ "Swaraj|Swaraj 717 – 963": "https://www.swarajtractors.com/sites/default/files/2019-11/744FE_4WD.pdf",
+ "TAFE|Massey Ferguson India / Eicher": "https://pdf.agriexpo.online/pdf/tafe-185051.html",
+ "Sonalika / Solis|Sonalika / Solis": "https://solistractorusa.com/wp-content/uploads/brochures/tractors/Solis_Tractors_Brochure.pdf",
+ "Versatile|4WD / DeltaTrack": "https://pdf.agriexpo.online/pdf/versatile/versatile-product-guide-2022/170540-19263.html",
+ "Rostselmash|Torum / Acros / Nova": "https://pdf.agriexpo.online/pdf/rostselmash/combine-harvester-acros-585-550/170169-40846.html",
+ "Mahindra|Arjun / 575 / Yuvo / Novo": "https://www.mahindrafarmequipment.com/wp-content/uploads/20-cii-enclave/Mahindra-Tractors.pdf",
+ "YTO / Dongfanghong|NLX / NLY": "https://www.sunnforest.com/Farm-Equipment/YTO-Tractor-Catalogue/YTO-70hp-to-90hp-4WD-Wheeled-Tractor-Brochure.pdf",
+ "YTO / Dongfanghong|SK / ESK / EME / NMF / EF / EMF": "https://www.sunnforest.com/Farm-Equipment/YTO-Tractor-Catalogue/YTO-25hp-to-40hp-4WD-Wheeled-Tractor-Brochure.pdf",
+ "New Holland|TR6": "https://www.newholland.com.tr/getmedia/52b1bb0f-f576-4b6c-b0ce-4236a39ec5af/TR6S_brosur.pdf?ext=.pdf",
+ "New Holland|66s": "https://newholland.com.tr/urunler/traktorler/66s%20Faz5",
+ "New Holland|TR5": "https://www.newholland.com.tr/urunler/traktorler/TR5%20Electro%20Command%20TMR",
+ "New Holland|CX5 / CX6": "https://agriculture.newholland.com/en-gb/europe/products/combine-harvesters/cx5-cx6-stage-v",
+ "Valtra|Serie A / BH (Sud America)": "https://www.valtra.africa/en/products/tractors/bh-hitech.html",
+ "Lovol|Serie TD": "https://en.lovol.com/agricultural/tractor.htm",
+ "Lovol|Serie M": "https://en.lovol.com/agricultural/tractor.htm",
+ "Lovol|Serie P": "https://en.lovol.com/agricultural/tractor.htm",
+ "Lovol|GM (gommata)": "https://en.lovol.com/",
+ "Zoomlion|RS / ZS / RG / PG / ZL / PL": "https://en.zoomlion-ag.com/product/Zoomlion-RS13041604Pro-New-Wheeled-Tractor-78.html",
+ "YTO / Dongfanghong|ELG / ELX / ELP / ELZ": "https://ytocorp.com/5-1-220-240hp-tractor-elx-series.html",
+ "YTO / Dongfanghong|Serie Frutteto": "https://ytocorp.com/5-10-25-95hp-tractor-narrow-series.html",
+ "Changfa|Serie B / C / DM / EH / EX / F": "https://www.betweeneastwest.com/upload/20210407/Changfa%20Agricultural%20Equipment%20Brochure.pdf",
+ "Changfa|Serie G / GB / HM / HA / J / K": "https://www.betweeneastwest.com/upload/20210407/Changfa%20Agricultural%20Equipment%20Brochure.pdf",
+ "Dongfeng|DF 25 – 75 CV": "https://www.df-tractor.com/product_category/four-wheel-tractor",
+ "Dongfeng|DF 80 – 240 CV": "https://www.df-tractor.com/product_category/four-wheel-tractor",
+ "World|Trattori FMWorld": "https://jiangsuworld.en.made-in-china.com/",
+ "World|Ruilong Plus": "https://pdf.agriexpo.online/pdf/jiangsu-world-agricultural-machinery-co-ltd/fmworld-ruilong-series-combine-harvester/192342-56290.html",
+ "New Holland|TC5.30 (India)": "https://agriculture.newholland.com/en/india/products/combine-harvester/tc5-30",
+ "Zoomlion|RF / RK / ZK": "https://eu.zoomlion.com/wp-content/uploads/2026/08/20260601-RK754-1英文单张.pdf",
+ "Zoomlion|RN / RC / ZN": "https://eu.zoomlion.com/wp-content/uploads/2026/08/20260601-RN904-1-RN1104-1-RN1304-1英文单张.pdf"
+};
+function brochureLink(d){
+  const u = BROCHURES[d.marchio + "|" + d.fam];
+  if (!u) {
+    const q = encodeURIComponent(`${d.marchio} ${d.fam.replace(/\(.*?\)/g,"")} brochure pdf english`);
+    return { u:`https://www.google.com/search?q=${q}`, l:"🔎 Cerca brochure", k:"search" };
+  }
+  const tr = /newholland\.com\.tr/.test(u) ? " (turco)" : "";
+  if (/\.pdf(\?|$)/i.test(u) || /\.pdf\.inline\.pdf/i.test(u)) return { u, l:"📄 Brochure PDF" + tr, k:"pdf" };
+  if (/agriexpo|issuu|directindustry/.test(u)) return { u, l:"📖 Brochure sfogliabile", k:"cat" };
+  return { u, l:"🌐 Pagina ufficiale" + tr, k:"page" };
+}
 
 const BRAND_COLOR = {
   "New Holland":"#0b58a8","Case IH":"#c8102e","Steyr":"#8e1b1b","John Deere":"#367c2b","Claas":"#7da40b",
@@ -748,6 +873,7 @@ function card(d){
       <div><span class="k">Emissioni</span>🌱 ${esc(d.emi)}</div>
     </div>
     ${d.nota?`<div class="note">ℹ️ ${esc(d.nota)}</div>`:""}
+    ${(b => `<div class="actions"><a class="broch ${b.k==="search"?"search":""}" href="${esc(b.u)}" target="_blank" rel="noopener">${b.l}</a></div>`)(brochureLink(d))}
   </article>`;
 }
 
@@ -847,6 +973,7 @@ function renderCmpTable(){
     ${row("Stabilimento", d => esc(d.stab))}
     ${row("Paese", d => (FLAG[d.paese]||"")+" "+esc(d.paese))}
     ${row("Emissioni", d => esc(d.emi))}
+    ${row("Brochure", d => { const b = brochureLink(d); return `<a href="${esc(b.u)}" target="_blank" rel="noopener">${b.l}</a>`; })}
   </table>`;
 }
 $("cmpBody").onclick = e => {

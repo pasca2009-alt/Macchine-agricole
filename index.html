@@ -65,6 +65,23 @@
   .search .clear { position:absolute; right:6px; top:50%; transform:translateY(-50%); border:0; background:transparent; color:var(--muted); font-size:18px; width:28px; height:28px; display:none; }
   .filterbtn { position:relative; border:0; background:var(--accent); color:var(--accent-text); border-radius:12px; padding:0 14px; font-weight:600; font-size:15px; }
   .filterbtn .badge { position:absolute; top:-6px; right:-6px; background:#ff3b30; color:#fff; font-size:11px; min-width:18px; height:18px; border-radius:9px; display:none; place-items:center; padding:0 4px; }
+  .chips.fit { overflow:visible; }
+  .chips.fit .chip { flex:1; text-align:center; padding:9px 6px; }
+  .pickers { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding-top:8px; }
+  .picker { position:relative; border:0; background:var(--card); box-shadow:var(--shadow); border-radius:12px; padding:7px 30px 8px 12px;
+    text-align:left; display:flex; flex-direction:column; min-height:52px; justify-content:center; }
+  .picker .pk-l { font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  .picker .pk-v { font-size:15px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .picker .pk-a { position:absolute; right:12px; top:50%; transform:translateY(-50%); color:var(--muted); }
+  .picker.on { background:var(--accent); color:var(--accent-text); }
+  .picker.on .pk-l, .picker.on .pk-a { color:var(--accent-text); opacity:.8; }
+  .tiles { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .tile { border:0; border-radius:14px; background:var(--chip); padding:13px 12px; text-align:left; min-height:66px; font-size:16px; font-weight:700; }
+  .tile small { display:block; font-weight:500; color:var(--muted); font-size:12.5px; margin-top:3px; line-height:1.3; }
+  .tile.on { background:var(--accent); color:var(--accent-text); }
+  .tile.on small { color:var(--accent-text); opacity:.85; }
+  .tile.full { grid-column:1 / -1; }
+  .tile:disabled { opacity:.35; }
   .chips { display:flex; gap:6px; overflow-x:auto; padding:8px 0 2px; scrollbar-width:none; }
   .chips::-webkit-scrollbar { display:none; }
   .chip { flex:none; border:0; background:var(--card); box-shadow:var(--shadow); border-radius:999px; padding:6px 12px; font-size:14px; font-weight:500; white-space:nowrap; }
@@ -200,9 +217,11 @@
       </div>
       <button class="filterbtn" id="filterBtn">Filtri<span class="badge" id="fBadge"></span></button>
     </div>
-    <div class="chips" id="typeChips"></div>
-    <div class="chips" id="groupChips"></div>
-    <div class="chips" id="hpChips"></div>
+    <div class="chips fit" id="typeChips"></div>
+    <div class="pickers">
+      <button class="picker" id="pickGroup"><span class="pk-l">Gruppo</span><span class="pk-v" id="pickGroupV">Tutti</span><span class="pk-a">▾</span></button>
+      <button class="picker" id="pickHp"><span class="pk-l">Potenza</span><span class="pk-v" id="pickHpV">Tutte</span><span class="pk-a">▾</span></button>
+    </div>
   </div>
 </div>
 
@@ -265,6 +284,12 @@
 </div>
 
 <!-- Foglio confronto -->
+<div class="sheet" id="pickSheet" aria-hidden="true">
+  <div class="grab"></div>
+  <div class="sheet-h"><span style="width:60px"></span><h2 id="pickTitle"></h2><button id="pickDone">Fine</button></div>
+  <div class="sheet-b"><div class="tiles" id="pickGrid"></div></div>
+</div>
+
 <div class="sheet" id="cmpSheet" aria-hidden="true">
   <div class="grab"></div>
   <div class="sheet-h"><span style="width:60px"></span><h2>Confronto</h2><button id="cDone">Fine</button></div>
@@ -387,6 +412,12 @@ const RAW = [
   ["TAFE","TAFE","Trattore","Utility","Massey Ferguson India / Eicher","Licenza MF per l'India",25,100,"India","Chennai",""],
   ["Sonalika","Sonalika / Solis","Trattore","Utility","Sonalika / Solis","Mercato indiano ed export",20,120,"India","Hoshiarpur",""],
 
+  // ---- Kartar (India) ----
+  ["Kartar","Kartar","Trattore","Utility","Serie 4036 – 5136","4036 – 5136 Plus CR",40,50,"India","Bhadson (Patiala, Punjab)",""],
+  ["Kartar","Kartar","Trattore","Utility","GlobeTrac 5936 / 7836","5936 – GlobeTrac 7836 4WD",60,75,"India","Bhadson (Patiala, Punjab)",""],
+  ["Kartar","Kartar","Mietitrebbia","Convenzionale","3500 / 360","3500, 3500 G, 3500 W, 360",74,90,"India","Bhadson (Patiala, Punjab)","Kartar è specialista indiano delle mietitrebbie"],
+  ["Kartar","Kartar","Mietitrebbia","Convenzionale","4000","4000, 4000 Maize, 4000 AC Cabin",101,101,"India","Bhadson (Patiala, Punjab)","Taglio 14 piedi (4000), 12 piedi (Maize)"],
+
   // ---- Altri ----
   ["MTZ","Belarus","Trattore","Utility","MTZ 82 – 3522","Gamma completa",50,355,"Bielorussia","Minsk",""],
   ["Rostselmash","Versatile","Trattore","Grandi potenze","4WD / DeltaTrack","Versatile 375 – 640",375,640,"Canada","Winnipeg",""],
@@ -499,7 +530,11 @@ const MODELS = {
 
   "Kubota|M4 / M5": [["M4063",66],["M4073",74],["M5-091",95],["M5-111",113]],
   "Kubota|M7": [["M7-133",130],["M7-153",150],["M7-173",175]],
-  "Kubota|M8": [["M8-190",190],["M8-210",210]]  ,
+  "Kubota|M8": [["M8-190",190],["M8-210",210]],
+  "Kartar|Serie 4036 – 5136": [["4036",40],["4536",45],["4536 Plus",45],["5036",50],["5036 4WD",50],["5136",50],["5136 Plus",50],["5136 CR",50],["5136 Plus CR",50]],
+  "Kartar|GlobeTrac 5936 / 7836": [["5936 2WD",60],["GlobeTrac 5936",60],["GlobeTrac 7836 4WD",75]],
+  "Kartar|3500 / 360": [["3500",74],["3500 G",74],["3500 W",76],["360 (TAF)",90]],
+  "Kartar|4000": [["4000",101],["4000 Maize",101],["4000 AC Cabin",101]],
   "New Holland|CR (Sud America)": [["CR5.85",275],["CR6.80",306],["CR7.90",449],["CR8.90",571]],
   "New Holland|TC (Sud America)": [["TC5.30",175],["TC5.90",258]],
   "John Deere|Serie media (Asia)": [["C120",120],["C230",230]],
@@ -646,7 +681,11 @@ const BROCHURES = {
  "World|Ruilong Plus": "https://pdf.agriexpo.online/pdf/jiangsu-world-agricultural-machinery-co-ltd/fmworld-ruilong-series-combine-harvester/192342-56290.html",
  "New Holland|TC5.30 (India)": "https://agriculture.newholland.com/en/india/products/combine-harvester/tc5-30",
  "Zoomlion|RF / RK / ZK": "https://eu.zoomlion.com/wp-content/uploads/2026/08/20260601-RK754-1英文单张.pdf",
- "Zoomlion|RN / RC / ZN": "https://eu.zoomlion.com/wp-content/uploads/2026/08/20260601-RN904-1-RN1104-1-RN1304-1英文单张.pdf"
+ "Zoomlion|RN / RC / ZN": "https://eu.zoomlion.com/wp-content/uploads/2026/08/20260601-RN904-1-RN1104-1-RN1304-1英文单张.pdf",
+ "Kartar|Serie 4036 – 5136": "https://kartarcombinetractors.in/",
+ "Kartar|GlobeTrac 5936 / 7836": "https://kartarcombinetractors.in/",
+ "Kartar|3500 / 360": "https://kartarcombinetractors.in/",
+ "Kartar|4000": "https://kartarcombinetractors.in/"
 };
 function brochureLink(d){
   const u = BROCHURES[d.marchio + "|" + d.fam];
@@ -665,11 +704,11 @@ const BRAND_COLOR = {
   "Fendt":"#4a7c2a","Massey Ferguson":"#d0021b","Valtra":"#b5122e","Same":"#c0392b","Deutz-Fahr":"#5ea52d",
   "Lamborghini":"#555b62","Landini":"#1d4fa0","McCormick":"#a3001b","Kubota":"#f26b21","Mahindra":"#c61f2d",
   "Swaraj":"#b32025","TAFE":"#7a1f2b","Sonalika / Solis":"#1d63b8","Belarus":"#1b5fa8","Versatile":"#d4471c","Rostselmash":"#d6001c",
-  "Zoomlion":"#1a9c3e","Lovol":"#0057a8","YTO / Dongfanghong":"#b3202b","Changfa":"#e0701a","Dongfeng":"#2a6f97","World":"#6a4c93"
+  "Zoomlion":"#1a9c3e","Lovol":"#0057a8","YTO / Dongfanghong":"#b3202b","Changfa":"#e0701a","Dongfeng":"#2a6f97","World":"#6a4c93", "Kartar":"#b8860b"
 };
 const GROUP_NAME = { CNH:"CNH", Deere:"Deere & Co.", Claas:"Claas", AGCO:"AGCO", SDF:"SDF", Argo:"Argo Tractors",
   Kubota:"Kubota", Mahindra:"Mahindra", TAFE:"TAFE", Sonalika:"Sonalika (ITL)", MTZ:"MTZ", Rostselmash:"Rostselmash",
-  Zoomlion:"Zoomlion", Lovol:"Weichai Lovol", YTO:"YTO (Sinomach)", Changfa:"Changfa", Dongfeng:"Changzhou Dongfeng", World:"World Group" };
+  Zoomlion:"Zoomlion", Lovol:"Weichai Lovol", YTO:"YTO (Sinomach)", Changfa:"Changfa", Dongfeng:"Changzhou Dongfeng", World:"World Group", Kartar:"Kartar" };
 const FLAG = { "Italia":"🇮🇹","Regno Unito":"🇬🇧","Austria":"🇦🇹","Stati Uniti":"🇺🇸","Turchia":"🇹🇷","India":"🇮🇳",
   "Corea del Sud":"🇰🇷","Brasile":"🇧🇷","Argentina":"🇦🇷","Polonia":"🇵🇱","Belgio":"🇧🇪","Germania":"🇩🇪","Francia":"🇫🇷",
   "Messico":"🇲🇽","Cina":"🇨🇳","Giappone":"🇯🇵","Canada":"🇨🇦","Finlandia":"🇫🇮","Croazia":"🇭🇷","Bielorussia":"🇧🇾","Russia":"🇷🇺" };
@@ -801,9 +840,8 @@ function renderControls(){
   const forTipo = data.filter(d => matches(d,"tipo")), ct = countBy(forTipo,"tipo");
   chipRow($("typeChips"), ["Trattore","Mietitrebbia"].map(t => ({v:t, l:t==="Trattore"?"🚜 Trattori":"🌾 Mietitrebbie", n:ct[t]||0})), S.tipo, "tipo", "Tutti");
   // Gruppo
-  const forG = data.filter(d => matches(d,"gruppo")), cg = countBy(forG,"gruppo");
-  const groups = uniq(data.map(d => d.gruppo)).filter(g => cg[g] || g === S.gruppo);
-  chipRow($("groupChips"), groups.map(g => ({v:g, l:GROUP_NAME[g], n:cg[g]||0})), S.gruppo, "gruppo", "Tutti i gruppi");
+  $("pickGroupV").textContent = S.gruppo ? GROUP_NAME[S.gruppo] : "Tutti";
+  $("pickGroup").classList.toggle("on", !!S.gruppo);
   // Select nel foglio filtri (collegati tra loro)
   const mk = key => { const src = data.filter(d => matches(d,key)), c = countBy(src,key); return Object.keys(c).map(v => ({v, n:c[v]})); };
   fillSelect($("fBrand"), mk("marchio").sort((x,y)=>x.v.localeCompare(y.v)), S.marchio, "Tutti i marchi");
@@ -811,14 +849,11 @@ function renderControls(){
   fillSelect($("fCountry"), mk("paese").sort((x,y)=>x.v.localeCompare(y.v)), S.paese, "Tutti i paesi", v => (FLAG[v]||"")+" "+v);
   $("hpMin").value = S.hpMin; $("hpMax").value = S.hpMax;
   $("hpMinV").textContent = S.hpMin + " CV"; $("hpMaxV").textContent = (S.hpMax >= MAXHP ? "850+ " : S.hpMax + " ") + "CV";
-  // Pulsanti rapidi potenza
-  const forHp = data.filter(d => matches(d,"hp"));
-  const curP = HP_PRESETS.findIndex(p => p.min === S.hpMin && p.max === S.hpMax);
-  const custom = curP < 0 && (S.hpMin > 0 || S.hpMax < MAXHP);
-  $("hpChips").innerHTML = `<button class="chip ${curP<0&&!custom?"on":""}" data-p="all">⚡ Tutte le potenze</button>` +
-    (custom ? `<button class="chip on" data-p="all">${S.hpMin}–${S.hpMax>=MAXHP?"850+":S.hpMax} CV ✕</button>` : "") +
-    HP_PRESETS.map((p,i) => { const n = forHp.filter(d => hpMatchPreset(d, p)).length;
-      return `<button class="chip ${i===curP?"on":""}" data-p="${i}">${p.l} CV <span style="opacity:.6">${n}</span></button>`; }).join("");
+  // Riepilogo potenza
+  const hpOn = S.hpMin > 0 || S.hpMax < MAXHP;
+  $("pickHpV").textContent = hpOn ? (S.hpMax >= MAXHP ? `> ${S.hpMin} CV` : S.hpMin === 0 ? `< ${S.hpMax} CV` : `${S.hpMin}–${S.hpMax} CV`) : "Tutte";
+  $("pickHp").classList.toggle("on", hpOn);
+  if ($("pickSheet").classList.contains("show")) renderPicker();
   // Badge filtri attivi
   const n = ["marchio","seg","paese"].filter(k => S[k]).length + ((S.hpMin>0||S.hpMax<MAXHP)?1:0);
   $("fBadge").textContent = n; $("fBadge").style.display = n ? "grid" : "none";
@@ -1006,11 +1041,45 @@ $("fSeg").onchange = e => { S.seg = e.target.value; render(); };
 $("fCountry").onchange = e => { S.paese = e.target.value; render(); };
 $("hpMin").oninput = e => { S.hpMin = Math.min(+e.target.value, S.hpMax); render(); };
 $("hpMax").oninput = e => { S.hpMax = Math.max(+e.target.value, S.hpMin); render(); };
-$("hpChips").onclick = e => {
-  const b = e.target.closest(".chip"); if (!b) return;
-  const p = HP_PRESETS[+b.dataset.p];
-  if (!p || (S.hpMin === p.min && S.hpMax === p.max)) { S.hpMin = 0; S.hpMax = MAXHP; } else { S.hpMin = p.min; S.hpMax = p.max; }
-  render();
+/* Selettori Gruppo / Potenza: pannello con riquadri grandi, un tocco e si chiude */
+let PICK = "";
+function renderPicker(){
+  let html = "";
+  if (PICK === "group") {
+    $("pickTitle").textContent = "Gruppo";
+    const cg = countBy(data.filter(d => matches(d,"gruppo")), "gruppo");
+    const groups = uniq(data.map(d => d.gruppo)).sort((a,b) => (cg[b]||0)-(cg[a]||0) || GROUP_NAME[a].localeCompare(GROUP_NAME[b]));
+    html = `<button class="tile full ${S.gruppo===""?"on":""}" data-v="">Tutti i gruppi<small>${Object.values(cg).reduce((a,b)=>a+b,0)} gamme</small></button>` +
+      groups.map(g => { const n = cg[g]||0, brands = uniq(data.filter(d => d.gruppo===g).map(d => d.marchio)).join(", ");
+        return `<button class="tile ${S.gruppo===g?"on":""}" data-v="${esc(g)}" ${n||S.gruppo===g?"":"disabled"}>${esc(GROUP_NAME[g])}<small>${n} gamme · ${esc(brands)}</small></button>`; }).join("");
+  } else {
+    $("pickTitle").textContent = "Potenza";
+    const forHp = data.filter(d => matches(d,"hp"));
+    const curP = HP_PRESETS.findIndex(p => p.min === S.hpMin && p.max === S.hpMax);
+    const all = !(S.hpMin > 0 || S.hpMax < MAXHP);
+    html = `<button class="tile full ${all?"on":""}" data-v="all">Tutte le potenze<small>${forHp.length} gamme</small></button>` +
+      HP_PRESETS.map((p,i) => { const n = forHp.filter(d => hpMatchPreset(d, p)).length;
+        return `<button class="tile ${i===curP?"on":""}" data-v="${i}" ${n||i===curP?"":"disabled"}>${p.l} CV<small>${n} gamme</small></button>`; }).join("") +
+      (!all && curP < 0 ? `<button class="tile full on" data-v="all">${S.hpMin}–${S.hpMax>=MAXHP?"850+":S.hpMax} CV<small>fascia personalizzata · tocca per azzerare</small></button>` : "") +
+      `<button class="tile full" data-v="custom">Fascia personalizzata…<small>imposta minimo e massimo con i cursori</small></button>`;
+  }
+  $("pickGrid").innerHTML = html;
+}
+function openPicker(kind){ PICK = kind; renderPicker(); openSheet("pickSheet"); }
+$("pickGroup").onclick = () => openPicker("group");
+$("pickHp").onclick = () => openPicker("hp");
+$("pickDone").onclick = closeSheets;
+$("pickGrid").onclick = e => {
+  const b = e.target.closest(".tile"); if (!b || b.disabled) return;
+  const v = b.dataset.v;
+  if (PICK === "group") {
+    S.gruppo = v;
+    if (S.marchio && !data.some(d => d.gruppo === S.gruppo && d.marchio === S.marchio)) S.marchio = "";
+  } else if (v === "custom") { closeSheets(); setTimeout(() => openSheet("filterSheet"), 250); return; }
+  else if (v === "all") { S.hpMin = 0; S.hpMax = MAXHP; }
+  else { const p = HP_PRESETS[+v]; S.hpMin = p.min; S.hpMax = p.max; }
+  if (navigator.vibrate) navigator.vibrate(8);
+  closeSheets(); render();
 };
 function resetAll(){ Object.assign(S, { q:"", tipo:"", gruppo:"", marchio:"", seg:"", paese:"", hpMin:0, hpMax:MAXHP }); render(); }
 $("fReset").onclick = resetAll;
